@@ -44,7 +44,7 @@ Inboxes your agent can send FROM. Add your own inbox IDs from agentmail.to.
 
 ```yaml
 inboxes:
-  - inbox_id: pgm@agentmail.to
+  - inbox_id: your-agent@agentmail.to
     display_name: "Parenting Assistant"
     default: true
     use_for:
@@ -53,7 +53,7 @@ inboxes:
       - grade_alerts
       - registration_alerts
 
-  - inbox_id: kidplanr@agentmail.to
+  - inbox_id: your-inbox@agentmail.to
     display_name: "KidPlanr"
     default: false
     use_for:
@@ -66,7 +66,7 @@ inboxes:
 
 ```yaml
 send_defaults:
-  default_inbox: pgm@agentmail.to
+  default_inbox: your-agent@agentmail.to
   require_confirmation_before_send: false   # set true to always prompt before sending
   dry_run_recipient: your-test-inbox@example.com   # used for dry runs
   mobile_friendly: true                    # apply mobile formatting rules

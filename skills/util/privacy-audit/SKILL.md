@@ -45,7 +45,7 @@ Scan skill files, agent configs, source YAML, and related documents for personal
 ### Tier 2 — Review (flag for contributor decision)
 | Category | Examples | Notes |
 |----------|----------|-------|
-| Email addresses | `fanfan@gmail.com` | Allow `example@`, `your@`, placeholder patterns |
+| Email addresses | `user@example.com` | Allow `example@`, `your@`, placeholder patterns |
 | Phone numbers | `(650) 555-1234` | Flag 10-digit US numbers |
 | Street addresses | `301 Industrial Rd, San Carlos` | Flag real addresses (allow well-known public venues) |
 | Child full names | `Emma Zhang`, `Liam Chen` | Cross-reference `--child-names` list |
@@ -99,7 +99,7 @@ When `--mode redact`, replace detected values with:
 |------|----------|-------|--------|
 | 12 | Tier 1 — API key | `am_us_0c700c1f...` | Remove or replace with `[YOUR_API_KEY]` |
 | 34 | Tier 2 — Child name | `Emma` | Replace with `[CHILD_NAME]` |
-| 67 | Tier 2 — Email | `fanfan@gmail.com` | Replace with `your-email@example.com` |
+| 67 | Tier 2 — Email | `user@example.com` | Replace with `your-email@example.com` |
 ```
 
 ## CI / pre-commit integration (planned)

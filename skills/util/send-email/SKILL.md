@@ -13,7 +13,7 @@ Send an email from an AgentMail inbox.
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `--to` | yes | — | Recipient email address |
-| `--from` | yes | — | AgentMail inbox email (e.g. `pgm@agentmail.to`) |
+| `--from` | yes | — | AgentMail inbox email (e.g. `your-agent@agentmail.to`) |
 | `--subject` | yes | — | Email subject line |
 | `--body` | yes | — | Plain-text email body |
 | `--html` | no | — | HTML email body (overrides `--body` for HTML clients) |
@@ -24,7 +24,7 @@ Send an email from an AgentMail inbox.
 
 1. Look up `AGENTMAIL_API_KEY` — check in order:
    - Environment variable `AGENTMAIL_API_KEY`
-   - `/Users/weizheng/projects/claude/kid_camp2/backend/.env`
+   - `/path/to/your/project/.env`
    - macOS Keychain: `security find-generic-password -s agentmail -w`
 
 2. URL-encode the `--from` address for use as `{inbox_id}` in the path.
@@ -51,8 +51,8 @@ curl -s -X POST "https://api.agentmail.to/v0/inboxes/${INBOX_ID}/messages/send" 
 
 | Email | Display Name | Use for |
 |-------|-------------|---------|
-| `pgm@agentmail.to` | KidPlanr PgM | Status updates, project comms |
-| `kidplanr@agentmail.to` | KidPlanr | Marketing, lead outreach |
+| `your-agent@agentmail.to` | Parenting Assistant | Status updates, project comms |
+| `your-inbox@agentmail.to` | KidPlanr | Marketing, lead outreach |
 
 ## API reference
 

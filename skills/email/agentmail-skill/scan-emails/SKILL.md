@@ -8,7 +8,7 @@ Read and summarize recent messages from an AgentMail inbox. Useful for morning r
 ## Usage
 
 ```
-/agentmail-skill scan-emails [--inbox pgm@agentmail.to] [--limit 20] [--since 24h] [--filter <keyword>] [--output summary|list|full]
+/agentmail-skill scan-emails [--inbox your-agent@agentmail.to] [--limit 20] [--since 24h] [--filter <keyword>] [--output summary|list|full]
 ```
 
 | Argument | Default | Description |
@@ -92,13 +92,13 @@ Truncate `text` to first 500 chars for summary mode; full for `--output full`.
 ### `--output list` (default for quick check)
 
 ```
-Inbox: pgm@agentmail.to | Scanned: last 24h | 5 messages
+Inbox: your-agent@agentmail.to | Scanned: last 24h | 5 messages
 
 ┌─────────────────────────────────────────────────────────────────┐
 │  # │ Date       │ From                    │ Subject              │
 ├─────────────────────────────────────────────────────────────────┤
 │  1 │ Mar 31 09:15 │ you@email.com [owner]  │ Re: Weekly digest    │
-│  2 │ Mar 31 08:00 │ pgm@agentmail.to [out] │ Parenting Digest...  │
+│  2 │ Mar 31 08:00 │ your-agent@agentmail.to [out] │ Parenting Digest...  │
 │  3 │ Mar 30 17:42 │ unknown@example.com    │ [hidden]             │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -135,7 +135,7 @@ Write to `user_docs/email_summaries/YYYY-MM-DD.md`. Append if file exists for to
 ```markdown
 ---
 date: YYYY-MM-DD
-inbox: pgm@agentmail.to
+inbox: your-agent@agentmail.to
 messages_scanned: 5
 generated_at: HH:MM
 ---
@@ -158,7 +158,7 @@ Searches recent messages for AYSO-related emails.
 
 ### Audit what the agent sent this week
 ```
-/agentmail-skill scan-emails --from pgm@agentmail.to --since 7d --output list
+/agentmail-skill scan-emails --from your-agent@agentmail.to --since 7d --output list
 ```
 Shows all outbound emails from the agent in the last 7 days.
 

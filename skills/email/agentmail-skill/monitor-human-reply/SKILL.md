@@ -10,7 +10,7 @@ Generalized from kid_camp2 `cron/cron_lead_reply_monitor.sh` + `docs/process/pgm
 ## Usage
 
 ```
-/agentmail-skill monitor-human-reply [--inbox pgm@agentmail.to] [--once | --watch]
+/agentmail-skill monitor-human-reply [--inbox your-agent@agentmail.to] [--once | --watch]
 ```
 
 | Argument | Default | Description |

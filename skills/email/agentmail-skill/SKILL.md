@@ -40,17 +40,17 @@ See `monitor-human-reply/SKILL.md` and `scan-emails/SKILL.md` for full docs.
 ```bash
 # Send a message
 /agentmail-skill send \
-  --from pgm@agentmail.to \
+  --from your-agent@agentmail.to \
   --to your-email@example.com \
   --subject "Weekly digest ready" \
   --body "Hi, your Monday digest is attached..."
 
 # Read a specific message
-/agentmail-skill read --inbox pgm@agentmail.to --message-id <id>
+/agentmail-skill read --inbox your-agent@agentmail.to --message-id <id>
 
 # Reply to a thread
 /agentmail-skill reply \
-  --inbox pgm@agentmail.to \
+  --inbox your-agent@agentmail.to \
   --thread-id <thread_id> \
   --body "Thanks, I'll schedule that."
 
@@ -177,7 +177,7 @@ curl -s -X POST \
 
 **Base URL:** `https://api.agentmail.to`
 **Auth:** `Authorization: Bearer $AGENTMAIL_API_KEY`
-**inbox_id encoding:** Full email address, URL-encoded (`pgm@agentmail.to` → `pgm%40agentmail.to`)
+**inbox_id encoding:** Full email address, URL-encoded (`your-agent@agentmail.to` → `your-agent%40agentmail.to`)
 
 ---
 

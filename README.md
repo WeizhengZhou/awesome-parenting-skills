@@ -63,7 +63,7 @@ Skills live in `skills/<category>/<name>/SKILL.md` and are symlinked to `~/.clau
 | `/info-gather` | Pull and deduplicate information from RSS, JSON APIs, and browser sources using a `sources.yaml` config | Implemented |
 | `/browser-automate` | Automate a Chrome task — school portals, registration forms, appointment booking, page monitoring | Implemented |
 | `/mac-cron-job` | Create, list, and debug scheduled automation tasks via launchd or crontab | Implemented |
-| `/send-email` | Send email from an AgentMail inbox (`pgm@agentmail.to`, `kidplanr@agentmail.to`) | Implemented |
+| `/send-email` | Send email from an AgentMail inbox (`your-agent@agentmail.to`, `your-inbox@agentmail.to`) | Implemented |
 | `/privacy-audit` | Scan skill files for PII, API keys, and child-identifiable data before submitting a PR | Placeholder |
 
 ---
