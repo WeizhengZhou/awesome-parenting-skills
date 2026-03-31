@@ -1,0 +1,29 @@
+# Environment / secrets
+.env
+*.env.local
+
+# User-specific state and personal data (not committed — see user_docs/agentmail_config.md)
+user_docs/agentmail_reply_state.json
+user_docs/reply_log.md
+user_docs/feedback_log.md
+user_docs/email_summaries/
+user_docs/scheduled_tasks/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Temp files
+/tmp/
+*.tmp

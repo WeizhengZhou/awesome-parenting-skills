@@ -1,0 +1,379 @@
+# San Carlos, CA — Parenting Information Sources
+# City: San Carlos, CA | County: San Mateo | Schools: SCSD (TK-8), SUHSD/Carlmont (9-12)
+# Last verified: 2026-03-31
+#
+# Use with: /info-gather [topic] --sources community/regions/bay-area/san-carlos/sources.yaml
+# For school portals: see community/schools/scsd/portals.yaml
+#                     see community/schools/suhsd-carlmont/portals.yaml
+
+city: San Carlos
+state: CA
+county: San Mateo
+zip_codes: ["94070"]
+
+# ─── School District News ────────────────────────────────────────────────────
+sources:
+
+  scsd_district_news:
+    label: "SCSD District News"
+    url: https://www.scsdk8.org/apps/news/rss?categoryid=9525
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [school, district, news]
+    notes: "SCSD district-level RSS (Edlio platform). Enable per-school feeds in scsd/portals.yaml"
+
+  # ─── Library ────────────────────────────────────────────────────────────────
+
+  smcl_san_carlos_events:
+    label: "San Carlos Library Events (SMCL)"
+    url: https://smcl.bibliocommons.com/v2/events?locations=1S
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true                # BiblioCommons requires JS
+    enabled: true
+    max_items: 20
+    tags: [library, events, storytime, kids]
+    notes: >
+      San Carlos branch (location code 1S) of San Mateo County Library.
+      No RSS/iCal. Requires JS rendering. Filter by age group on the page.
+      Recurring: Family Storytime Thu 10:30 AM, Baby Bounce Fri 10:30 AM.
+
+  smcl_all_events:
+    label: "SMCL All Branch Events"
+    url: https://smcl.bibliocommons.com/v2/events
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: false   # use san_carlos_events (location-filtered) instead
+    keywords: [kids, children, family, storytime, toddler, youth, teen]
+    max_items: 15
+    tags: [library, events]
+
+  # ─── Parks & Recreation ────────────────────────────────────────────────────
+
+  sancarlos_activenet:
+    label: "San Carlos Parks & Rec Registration (ActiveNet)"
+    url: https://anc.apm.activecommunities.com/sancarlos/home
+    type: browser
+    rate_limit: 3.0
+    needs_browser: true
+    enabled: true
+    max_items: 20
+    tags: [recreation, registration, classes, camps, sports]
+    notes: >
+      City of San Carlos uses ActiveNet (Active Network) for all Parks & Rec registration.
+      No RSS/API. Monitor for class openings via /monitor-registration.
+      Activity guides (seasonal PDF): https://www.cityofsancarlos.org/activityguide/
+
+  sancarlos_parks_events:
+    label: "San Carlos Community Events (City)"
+    url: https://www.cityofsancarlos.org/city_hall/departments_and_divisions/parks_and_recreation/community_events.php
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [city, events, community, family]
+    notes: "City-run community events page. No RSS — use changedetection.io or web_search fallback."
+
+  sancarlos_youth_sports:
+    label: "San Carlos Youth Sports (City)"
+    url: https://www.cityofsancarlos.org/city_hall/departments_and_divisions/parks_and_recreation/youth/index.php
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [sports, youth, registration]
+
+  # ─── Local Events & Activities ─────────────────────────────────────────────
+
+  sancarloslife:
+    label: "San Carlos Life (Community Blog)"
+    url: https://sancarloslife.com/events/
+    type: browser
+    rate_limit: 1.5
+    needs_browser: false
+    enabled: true
+    max_items: 15
+    tags: [events, community, local]
+    notes: "Active local community blog. Weekly events roundup at /whats-on-in-san-carlos-this-week/"
+
+  chatterblock_sancarlos:
+    label: "ChatterBlock San Carlos"
+    url: https://www.chatterblock.com/events/san-carlos-california-c103680/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    max_items: 20
+    tags: [events, classes, camps, kids]
+    notes: "Best dedicated San Carlos kids event aggregator. Also has resources at /resources/ URL."
+
+  chatterblock_sancarlos_resources:
+    label: "ChatterBlock San Carlos Resources (classes, camps, places)"
+    url: https://www.chatterblock.com/resources/san-carlos-california-c103680/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    max_items: 20
+    tags: [classes, enrichment, camps, places]
+
+  eventbrite_sancarlos_kids:
+    label: "Eventbrite San Carlos Kids Events"
+    url: https://www.eventbrite.com/d/ca--san-carlos/kids-events/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    max_items: 15
+    tags: [events, tickets, kids, family]
+
+  eventbrite_api_sancarlos:
+    label: "Eventbrite API — San Carlos Family Events"
+    url: "https://www.eventbriteapi.com/v3/events/search/"
+    type: json_api
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false   # requires EVENTBRITE_TOKEN env var
+    params:
+      q: "kids family children"
+      location.address: "San Carlos, CA"
+      location.within: "10mi"
+      categories: "10005"
+    max_items: 20
+    tags: [events, family]
+
+  patch_sancarlos:
+    label: "Patch — San Carlos Local News"
+    url: https://patch.com/california/sancarlos
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: [school, kids, family, park, event, youth, playground, sports]
+    max_items: 10
+    tags: [news, local, community]
+
+  mommy_poppins_bayarea:
+    label: "Mommy Poppins Bay Area"
+    url: https://mommypoppins.com/san-francisco-bay-area-kids
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: [peninsula, san carlos, san mateo, redwood city, belmont]
+    max_items: 10
+    tags: [events, activities, guides]
+
+  bayareaparent_rss:
+    label: "Bay Area Parent Magazine"
+    url: https://www.bayareaparent.com/feed/
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 10
+    tags: [events, parenting, peninsula]
+
+  reddit_sancarlos:
+    label: "Reddit r/SanCarlos"
+    url: https://www.reddit.com/r/SanCarlos.rss
+    type: rss
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 15
+    tags: [community, local, discussion]
+
+  # ─── Youth Sports & Activities ─────────────────────────────────────────────
+
+  ayso_sancarlos:
+    label: "San Carlos AYSO Region 107"
+    url: https://www.sancarlosayso.org/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [sports, soccer, registration, youth]
+    notes: "Recreational soccer ages 3-18. Monitor for registration openings."
+
+  sancarlos_united_soccer:
+    label: "San Carlos United (Competitive Soccer)"
+    url: https://www.sancarlosunited.org/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: false   # enable if interested in competitive soccer
+    max_items: 10
+    tags: [sports, soccer, competitive]
+
+  sancarlos_little_league:
+    label: "San Carlos Little League"
+    url: https://www.sancarlosll.com/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [sports, baseball, softball, registration]
+
+  sancarlos_childrens_theater:
+    label: "San Carlos Children's Theater (SCCT)"
+    url: https://sancarloschildrenstheater.com/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+    tags: [theater, arts, enrichment, classes]
+
+  scct_calendar:
+    label: "SCCT Calendar (Google iCal)"
+    url: https://calendar.google.com/calendar/ical/scct.dates%40gmail.com/public/basic.ics
+    type: ical
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    max_items: 15
+    tags: [theater, calendar, events]
+
+  kings_swim_sancarlos:
+    label: "King's Swim Academy — San Carlos"
+    url: https://kingsswimacademy.com/locations/san-carlos-ca/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    max_items: 10
+    tags: [swim, lessons, registration]
+    address: "1119 Industrial Rd, San Carlos, CA 94070"
+
+  # ─── Summer Camps ───────────────────────────────────────────────────────────
+
+  kidsoutandabout_camps:
+    label: "KidsOutAndAbout Bay Area Summer Camps"
+    url: https://sf.kidsoutandabout.com/summer-camps
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: [san carlos, peninsula, belmont, redwood city, san mateo]
+    max_items: 30
+    tags: [camps, summer]
+
+  camppage_peninsula:
+    label: "CampPage Bay Area Camps"
+    url: https://www.camppage.com/summer-camps/california/bay-area/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: [san carlos, peninsula, belmont, redwood city, san mateo]
+    max_items: 20
+    tags: [camps, summer]
+
+  # ─── Health & Medical ──────────────────────────────────────────────────────
+
+  pamf_sancarlos:
+    label: "PAMF San Carlos Center (Sutter Health)"
+    url: https://www.sutterhealth.org/find-location/facility/san-carlos-center-1043246914
+    type: browser
+    rate_limit: 3.0
+    needs_browser: true
+    enabled: false   # not a feed — use for reference / appointment monitoring
+    max_items: 5
+    tags: [health, medical, pediatrics]
+    patient_portal: https://myhealthonline.sutterhealth.org/
+    portal_system: "Sutter My Health Online (NOT MyChart)"
+    address: "301 Industrial Rd, San Carlos, CA 94070"
+    notes: >
+      PAMF (Palo Alto Medical Foundation) uses Sutter Health's "My Health Online"
+      patient portal — NOT Epic MyChart. Login at myhealthonline.sutterhealth.org.
+      For appointment monitoring, use /browser-automate with Tier 1 (existing Chrome).
+
+  stanford_childrens_san_mateo:
+    label: "Stanford Children's Health — San Mateo"
+    url: https://www.stanfordchildrens.org/en/location/cal/san-mateo/50-s-san-mateo-dr.html
+    type: browser
+    rate_limit: 3.0
+    needs_browser: true
+    enabled: false
+    tags: [health, pediatrics, specialist]
+    patient_portal: https://mychart.stanfordhealthcare.org/
+    portal_system: Epic MyChart
+    address: "50 S San Mateo Dr, San Mateo, CA 94401"
+    notes: "Stanford Children's uses Epic MyChart. Includes Saturday urgent care."
+
+  # ─── Community & Local News ─────────────────────────────────────────────────
+
+  smdailyjournal:
+    label: "San Mateo Daily Journal (local paper)"
+    url: https://www.smdailyjournal.com/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: [san carlos, school, kids, family, park, sports, youth]
+    max_items: 10
+    tags: [news, local]
+
+  sfstandard_local:
+    label: "SF Standard (Bay Area news)"
+    url: https://sfstandard.com/feed/
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: [san mateo, san carlos, peninsula, school, education, kids, youth]
+    max_items: 8
+    tags: [news, bay-area]
+
+# ─── Aggregation settings ────────────────────────────────────────────────────
+aggregator:
+  dedup_threshold: 0.6
+  recency_window_days: 7
+  top_n: 20
+  score_weights:
+    relevance: 5
+    recency: 3
+    actionability: 3      # has date, location, registration link
+    cross_source: 2       # mentioned in 2+ sources
+
+# ─── Topic-specific source presets ──────────────────────────────────────────
+# Use these when running /info-gather with a specific topic:
+presets:
+  events_this_weekend:
+    description: "What's happening this weekend for kids"
+    sources: [smcl_san_carlos_events, sancarloslife, chatterblock_sancarlos,
+              eventbrite_sancarlos_kids, sancarlos_parks_events, scct_calendar]
+
+  summer_camps:
+    description: "Summer camp research"
+    sources: [kidsoutandabout_camps, camppage_peninsula, chatterblock_sancarlos_resources,
+              sancarlos_activenet, sancarlos_childrens_theater, kings_swim_sancarlos]
+
+  school_news:
+    description: "School and district announcements"
+    sources: [scsd_district_news]   # + enable your specific school's feed in scsd/portals.yaml
+
+  sports_registration:
+    description: "Youth sports registration openings"
+    sources: [ayso_sancarlos, sancarlos_little_league, sancarlos_activenet,
+              sancarlos_youth_sports, sancarlos_united_soccer]
+
+  enrichment_classes:
+    description: "After-school classes and enrichment programs"
+    sources: [chatterblock_sancarlos_resources, sancarlos_childrens_theater,
+              kings_swim_sancarlos, sancarlos_activenet]
+
+  community_news:
+    description: "Local San Carlos community news and discussions"
+    sources: [sancarloslife, patch_sancarlos, reddit_sancarlos, smdailyjournal]

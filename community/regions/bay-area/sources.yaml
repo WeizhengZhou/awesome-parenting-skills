@@ -1,0 +1,257 @@
+# Bay Area Parenting Information Sources
+# Use with: /info-gather [topic] --sources community/regions/bay-area/sources.yaml
+#
+# Source types: rss | json_api | browser | web_search
+# needs_browser: true = requires JS rendering (use browser MCP or WebFetch with rendering)
+# keywords: [] = all items; list = filter to matching items only
+# rate_limit: seconds to wait between requests to this domain
+
+region: bay-area
+description: San Francisco Bay Area parenting information sources (Peninsula, South Bay, East Bay, SF, Marin)
+
+sources:
+
+  # ─── Family Events & Activities ───────────────────────────────────────────
+
+  bay_area_parent:
+    url: "https://www.bayareaparent.com/feed/"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 15
+    notes: "Bay Area Parent magazine — general family content, event listings, camp guides"
+
+  510_families:
+    url: "https://www.510families.com/feed/"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 10
+    notes: "East Bay family events and activities"
+
+  kids_out_and_about_sf:
+    url: "https://sf.kidsoutandabout.com/rss.xml"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 20
+    notes: "Comprehensive Bay Area kids event listings — camps, classes, events"
+
+  red_tricycle_sf:
+    url: "https://redtri.com/san-francisco/feed/"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 15
+    notes: "SF-area family activities and guides"
+
+  eventbrite_family_bayarea:
+    url: "https://www.eventbriteapi.com/v3/events/search/"
+    type: json_api
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false  # requires EVENTBRITE_TOKEN env var
+    params:
+      q: "kids family children"
+      location.address: "San Jose, CA"
+      location.within: "30mi"
+      categories: "10005"  # Family & Education
+    max_items: 20
+    notes: "Set EVENTBRITE_TOKEN env var to enable. Change location.address for your city."
+
+  # ─── Libraries ─────────────────────────────────────────────────────────────
+
+  smcl_events:
+    url: "https://smcl.libcal.com/calendar/events?cid=-1&t=d&d=0000-00-00&cal=-1&inc=0"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: ["kids", "children", "family", "storytime", "toddler", "youth"]
+    max_items: 15
+    notes: "San Mateo County Library events — Peninsula families"
+
+  sfpl_events:
+    url: "https://sfpl.org/events/calendar"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: ["kids", "children", "family", "storytime", "teen"]
+    max_items: 10
+    notes: "San Francisco Public Library events"
+
+  sccl_events:
+    url: "https://www.sccl.org/events"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: ["kids", "children", "family", "storytime", "youth"]
+    max_items: 15
+    notes: "Santa Clara County Library — South Bay families"
+
+  # ─── Museums & Attractions ────────────────────────────────────────────────
+
+  curiodyssey:
+    url: "https://curiodyssey.org/events/"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 10
+    notes: "CuriOdyssey science museum, San Mateo — great for Peninsula kids"
+
+  hiller_aviation:
+    url: "https://hiller.org/events/"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 8
+    notes: "Hiller Aviation Museum, San Carlos — STEM-focused events"
+
+  childrens_discovery_museum:
+    url: "https://www.cdm.org/events/"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 10
+    notes: "Children's Discovery Museum of San Jose — South Bay"
+
+  exploratorium:
+    url: "https://www.exploratorium.edu/visit/calendar"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: ["family", "kids", "youth", "children"]
+    max_items: 10
+    notes: "Exploratorium SF — family days and special events"
+
+  # ─── Parks & Recreation ────────────────────────────────────────────────────
+
+  san_mateo_county_parks:
+    url: "https://parks.smcgov.org/events"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: ["kids", "family", "children", "youth", "camp"]
+    max_items: 10
+    notes: "San Mateo County Parks events — outdoor activities"
+
+  actnet_bayarea:
+    url: "https://www.activityreg.com"
+    type: web_search
+    rate_limit: 3.0
+    needs_browser: false
+    enabled: true
+    search_query: "kids classes registration Bay Area site:activityreg.com"
+    max_items: 10
+    notes: "ACTIVENet-based city rec department registrations — many Bay Area cities"
+
+  # ─── Summer Camps ─────────────────────────────────────────────────────────
+
+  kidsoutandabout_camps:
+    url: "https://sf.kidsoutandabout.com/summer-camps"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    keywords: []
+    max_items: 30
+    notes: "Comprehensive Bay Area summer camp directory"
+
+  camppage_bayarea:
+    url: "https://www.camppage.com/summer-camps/california/bay-area/"
+    type: browser
+    rate_limit: 2.0
+    needs_browser: false
+    enabled: true
+    keywords: []
+    max_items: 20
+    notes: "Bay Area camps on CampPage"
+
+  # ─── School & District News ────────────────────────────────────────────────
+
+  smfc_news:
+    url: "https://www.smfcsd.net/site/rss.aspx?DomainID=4"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false  # enable for SMFC families
+    keywords: []
+    max_items: 10
+    notes: "San Mateo-Foster City School District news"
+
+  pausd_news:
+    url: "https://www.pausd.org/site/rss.aspx?DomainID=4"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false  # enable for PAUSD families
+    keywords: []
+    max_items: 10
+    notes: "Palo Alto Unified School District news"
+
+  # ─── Local News (family-relevant) ─────────────────────────────────────────
+
+  sfstandard:
+    url: "https://sfstandard.com/feed/"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: ["school", "kids", "family", "park", "education", "youth", "playground"]
+    max_items: 10
+
+  sanjosespotlight:
+    url: "https://sanjosespotlight.com/feed/"
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    keywords: ["school", "kids", "family", "park", "education", "youth"]
+    max_items: 10
+
+  # ─── Deals & Discounts ────────────────────────────────────────────────────
+
+  groupon_bayarea_family:
+    url: "https://www.groupon.com/local/san-jose/kids-activities"
+    type: browser
+    rate_limit: 3.0
+    needs_browser: true
+    enabled: false  # enable during camp registration season
+    keywords: []
+    max_items: 10
+    notes: "Groupon deals for Bay Area family activities"
+
+# ─── Aggregation settings ───────────────────────────────────────────────────
+aggregator:
+  dedup_threshold: 0.6        # similarity score to consider items duplicates (0-1)
+  recency_window_days: 14     # prefer items from the last N days
+  top_n: 25                   # return top N items after scoring
+  score_weights:
+    relevance: 5
+    recency: 3
+    actionability: 3          # has date, location, registration link
+    cross_source_signal: 2    # mentioned in 2+ sources
+
+# ─── Usage notes ─────────────────────────────────────────────────────────────
+# Enable/disable sources by setting enabled: true/false
+# For district-specific sources, enable only the one(s) matching your school district
+# To add your city's rec department, find their events URL and add a browser-type source
+# Eventbrite requires: export EVENTBRITE_TOKEN=your_token_here

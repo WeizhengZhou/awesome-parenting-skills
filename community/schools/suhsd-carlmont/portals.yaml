@@ -1,0 +1,93 @@
+# Sequoia Union High School District — Carlmont High School
+# District: SUHSD | School: Carlmont HS | Grades: 9-12
+# Serves San Carlos residents for high school
+# Last verified: 2026-03-31
+
+district:
+  name: Sequoia Union High School District
+  short: SUHSD
+  school: Carlmont High School
+  grades: 9-12
+  website: https://www.carlmonths.org/
+  district_url: https://www.seq.org/
+  address: "1400 Alameda de las Pulgas, Belmont, CA 94002"
+  phone: "(650) 592-3550"
+
+# ─── Grade / Attendance Portal ───────────────────────────────────────────────
+grades_portal:
+  system: Infinite Campus
+  login_url: https://ic.seq.org/campus/portal/parents/sequoia.jsp
+  auth_type: username_password        # district-issued IC credentials
+  api_available: true
+  api_library: Infinite-Campus-API    # github.com/gilesgc/Infinite-Campus-API
+  api_library_url: https://github.com/gilesgc/Infinite-Campus-API
+  python_alt: ic_parent_api           # github.com/schwartzpub/ic_parent_api
+  automation_tier: 2                  # Playwright persistent profile or API
+  credential_keychain_service: suhsd-infinite-campus
+  notes: >
+    Infinite Campus parent portal at ic.seq.org.
+    No SSO — uses district-issued Infinite Campus credentials.
+    PyPowerSchool does NOT apply here; use the IC-specific libraries.
+    API gives grades, attendance, schedule, assignments.
+
+# ─── Learning Management System ──────────────────────────────────────────────
+lms:
+  system: Canvas
+  login_url: https://sequoia.instructure.com/
+  auth_type: google_oauth             # students log in via Google (@seq.org accounts)
+  api_available: true
+  api_library: canvasapi              # github.com/ucfopen/canvasapi
+  observer_role: true                 # parents can link via Observer/Parent pairing code
+  pairing_code_source: student's Canvas account → Account → Pair with Observer
+  automation_tier: 1                  # attach to existing Chrome (Google SSO)
+  credential_keychain_service: suhsd-canvas-observer-token
+  notes: >
+    Canvas LMS at sequoia.instructure.com.
+    Parent observer role: get a pairing code from student's Canvas account
+    (Account > Pair with Observer), then create your own Canvas parent account.
+    With the canvasapi library and observer token, you can pull:
+      - courses.courseWork.list (assignments)
+      - courses.courseWork.studentSubmissions.list (submission + grade status)
+      - courses.announcements.list (teacher posts)
+    See automation/school-portals/canvas-observer.py for implementation.
+
+# ─── Calendars (subscribable iCal feeds) ─────────────────────────────────────
+calendars:
+  instructional:
+    name: Carlmont Instructional Calendar
+    ical_url: https://calendar.google.com/calendar/ical/c_sq4u18k9brmd8l3ali8met107s%40group.calendar.google.com/public/basic.ics
+    gcal_embed: https://calendar.google.com/calendar/embed?src=c_sq4u18k9brmd8l3ali8met107s%40group.calendar.google.com
+    type: ical
+    needs_browser: false
+    content: Bell schedule changes, holidays, early dismissals, key dates
+
+  athletics:
+    name: Carlmont Athletics Calendar
+    ical_url: https://calendar.google.com/calendar/ical/seq.org_m872po7jdb5c3aqd7obiij4f68%40group.calendar.google.com/public/basic.ics
+    type: ical
+    needs_browser: false
+    content: Sports game and practice schedules
+
+  performing_arts:
+    name: Carlmont Performing Arts Calendar
+    ical_url: https://calendar.google.com/calendar/ical/seq.org_bpaqhmiur1rek5mqmm2h01u874%40group.calendar.google.com/public/basic.ics
+    type: ical
+    needs_browser: false
+    content: Theater, music, dance performances and rehearsals
+
+  district_wide:
+    name: SUHSD District Calendar
+    url: https://www.seq.org/Calendar/
+    type: browser
+    needs_browser: false
+    content: District-wide events, holidays, board meetings
+
+# ─── News Feeds ──────────────────────────────────────────────────────────────
+news_feeds:
+  carlmont_site:
+    url: https://www.carlmonths.org/
+    type: browser
+    rate_limit: 2.0
+    needs_browser: true
+    enabled: true
+    notes: No RSS detected — scrape news section or monitor via changedetection.io

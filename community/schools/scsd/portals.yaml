@@ -1,0 +1,219 @@
+# San Carlos School District (SCSD) — Portal Configuration
+# District: San Carlos School District | Grades: TK–8 | Domain: scsdk8.org
+# Last verified: 2026-03-31
+#
+# Use this file with:
+#   /check-grades --portals community/schools/scsd/portals.yaml
+#   /browser-automate "check homework" --portals community/schools/scsd/portals.yaml
+#   /top-up-lunch --portals community/schools/scsd/portals.yaml
+
+district:
+  name: San Carlos School District
+  short: SCSD
+  grades: TK-8
+  domain: scsdk8.org
+  website: https://www.scsdk8.org/
+  phone: "(650) 508-7333"
+
+# ─── Schools ─────────────────────────────────────────────────────────────────
+schools:
+  arundel:
+    name: Arundel Elementary
+    grades: TK-3
+    url: https://arundel.scsdk8.org/
+    news_rss: https://arundel.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7350"
+
+  brittan_acres:
+    name: Brittan Acres Elementary
+    grades: TK-3
+    url: https://brittanacres.scsdk8.org/
+    news_rss: https://brittanacres.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7360"
+
+  heather:
+    name: Heather Elementary
+    grades: TK-3
+    url: https://heather.scsdk8.org/
+    news_rss: https://heather.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7365"
+
+  white_oaks:
+    name: White Oaks Elementary
+    grades: TK-3
+    url: https://whiteoaks.scsdk8.org/
+    news_rss: https://whiteoaks.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7380"
+
+  arroyo:
+    name: Arroyo Upper Elementary
+    grades: 4-5
+    url: https://arroyo.scsdk8.org/
+    news_rss: https://arroyo.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7355"
+
+  mariposa:
+    name: Mariposa Upper Elementary
+    grades: 4-5
+    url: https://mariposa.scsdk8.org/
+    news_rss: https://mariposa.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7370"
+
+  central_middle:
+    name: Central Middle School
+    grades: 6-8
+    url: https://central.scsdk8.org/
+    news_rss: https://central.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7390"
+
+  tierra_linda:
+    name: Tierra Linda Middle School
+    grades: 6-8
+    url: https://tierralinda.scsdk8.org/
+    news_rss: https://tierralinda.scsdk8.org/apps/news/rss
+    office_phone: "(650) 508-7395"
+
+# ─── Grade / Attendance Portal ───────────────────────────────────────────────
+grades_portal:
+  system: PowerSchool
+  login_url: https://scsdk8.powerschool.com/public/home.html
+  auth_type: username_password        # no SSO — district-issued credentials
+  api_available: true
+  api_library: PyPowerSchool          # github.com/dougpenny/PyPowerSchool
+  api_library_url: https://github.com/dougpenny/PyPowerSchool
+  automation_tier: 2                  # Playwright persistent profile (or API)
+  credential_keychain_service: scsd-powerschool
+  notes: >
+    Use PyPowerSchool for API access with district-provided parent credentials.
+    Browser fallback: Tier 2 (save session once, replay headlessly).
+    No Google SSO — uses native PowerSchool login.
+
+# ─── Learning Management System ──────────────────────────────────────────────
+lms:
+  system: Google Classroom
+  login_url: https://classroom.google.com/
+  auth_type: google_oauth             # SSO via @scsdk8.org Google accounts
+  api_available: true
+  api_library: google-api-python-client
+  api_scope: https://www.googleapis.com/auth/classroom.courses.readonly
+  observer_role: true                 # parents can be added as guardians
+  guardian_invite: contact teacher or school office
+  automation_tier: 1                  # attach to existing Chrome (Google SSO)
+  notes: >
+    SCSD uses Google Workspace (@scsdk8.org). Students log in with Google SSO.
+    Parents access via Guardian summary emails (daily/weekly digest via Google Classroom settings).
+    For API access: request guardian invite from teacher, then use Classroom API
+    with guardian credentials. See automation/school-portals/google-classroom.py.
+
+# ─── Lunch Account ────────────────────────────────────────────────────────────
+lunch:
+  system: unknown                     # NOT confirmed as of 2026-03-31
+  notes: >
+    SCSD lunch payment system not confirmed via public website.
+    Contact Business Office to verify: Lisa Ceragioli, (650) 590-5927.
+    Likely candidates: MySchoolBucks or district-managed system.
+    Update this field once confirmed.
+  district_lunch_page: https://www.scsdk8.org/apps/pages/School-Lunch-Program
+  menus_distribution: school newsletters (no dedicated menu app confirmed)
+
+# ─── After-School Programs ────────────────────────────────────────────────────
+after_school:
+  overview_url: https://www.scsdk8.org/apps/pages/Afterschool-Extended-Learning
+
+  programs:
+    tkelp:
+      name: TK Extended Learning Program (TKELP)
+      grades: TK
+      url: https://sites.google.com/scsdk8.org/tkelp/home
+      needs_browser: true
+
+    ace:
+      name: Afterschool Care Enrichment (ACE)
+      grades: K-5
+      url: https://acesancarlos.com/
+      needs_browser: true
+      notes: On-campus care at multiple SCSD campuses
+
+    scbas:
+      name: San Carlos Belmont Afterschool (SCBAS)
+      grades: K-3
+      url: https://www.afterschoolkids.net/
+      needs_browser: false
+      notes: Licensed childcare, since 1981
+
+    enrichment_classes:
+      name: On-Campus Enrichment Classes (vendor-run)
+      grades: K-8
+      url: https://docs.google.com/document/d/1u6x2UiqDx99-FT8QD0RcaC-614g-ZMAzOEsiAVC6cmI/
+      needs_browser: true
+      notes: Google Doc — list of vendor enrichment classes on SCSD campuses (STEAM, arts, sports)
+      contact: "Julia Mendelson, (650) 590-5966"
+
+# ─── District News (RSS feeds — usable with /info-gather) ────────────────────
+news_feeds:
+  district_news:
+    url: https://www.scsdk8.org/apps/news/rss?categoryid=9525
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: true
+    max_items: 10
+
+  # Per-school feeds follow the same Edlio pattern:
+  # https://[school].scsdk8.org/apps/news/rss
+  # Enable the one(s) for your child's school:
+  arundel_news:
+    url: https://arundel.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false   # set to true for Arundel families
+
+  brittan_acres_news:
+    url: https://brittanacres.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  heather_news:
+    url: https://heather.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  white_oaks_news:
+    url: https://whiteoaks.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  arroyo_news:
+    url: https://arroyo.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  mariposa_news:
+    url: https://mariposa.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  central_middle_news:
+    url: https://central.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
+
+  tierra_linda_news:
+    url: https://tierralinda.scsdk8.org/apps/news/rss
+    type: rss
+    rate_limit: 1.0
+    needs_browser: false
+    enabled: false
