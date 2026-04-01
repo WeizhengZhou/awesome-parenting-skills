@@ -80,310 +80,294 @@ Browse a child's YouTube / YouTube Kids watch history, analyze content patterns,
 
 ## Step-by-step: scrape watch history
 
-### Step 0: Choose browser mode
+### Step 0: Detect and launch headed Chrome on debug port 9222
 
-On first run, ask the user:
+Before doing anything else, check if a headed Chrome with remote debugging is already running:
 
-```
-YouTube history requires a Google login. How would you like to open the browser?
-
-  1. Headed Chrome (recommended) — opens a visible browser window you can log in to
-  2. Headless Chrome — runs invisibly in the background (requires existing saved session)
-
-Enter 1 or 2 [default: 1]:
+```bash
+curl -s http://localhost:9222/json/version 2>/dev/null | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('Browser',''))"
 ```
 
-- **First-time use → always default to headed (option 1).** The user needs to see the browser to complete Google login.
-- **Subsequent runs** → if a saved Playwright profile exists at `~/.parenting/profiles/youtube/`, offer headless as the default.
-- Save the user's choice to `user_docs/youtube_audit_config.md` so it persists across runs.
+**If port 9222 is not responding**, tell the user:
 
-### Step 1: Launch browser
+> Chrome isn't running in debug mode yet. I need to open a special Chrome window so I can read your YouTube history.
+>
+> Here's what the command does:
+> - Opens a **visible** (headed) Chrome window — you'll be able to see and interact with it
+> - Enables a debug port (`9222`) so I can read page content without controlling your regular browser
+> - Uses a separate profile (`/tmp/chrome-parenting-profile`) so it won't affect your regular Chrome bookmarks or settings
+>
+> Command:
+> ```bash
+> /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+>   --remote-debugging-port=9222 \
+>   --no-first-run \
+>   --no-default-browser-check \
+>   --user-data-dir=/tmp/chrome-parenting-profile \
+>   --start-maximized \
+>   "https://www.youtube.com/feed/history"
+> ```
+>
+> Want me to run this for you, or would you prefer to run it yourself?
 
-**Headed Chrome (option 1):**
-```python
-from playwright.sync_api import sync_playwright
-
-with sync_playwright() as p:
-    browser = p.chromium.launch_persistent_context(
-        user_data_dir="~/.parenting/profiles/youtube/",
-        headless=False,
-        args=["--start-maximized"],
-        no_viewport=True,
-    )
-    page = browser.new_page()
+If the user asks you to run it, execute:
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --no-first-run \
+  --no-default-browser-check \
+  --user-data-dir=/tmp/chrome-parenting-profile \
+  --start-maximized \
+  "https://www.youtube.com/feed/history" \
+  > /tmp/chrome-debug.log 2>&1 &
+sleep 2
+curl -s http://localhost:9222/json/version | python3 -c "import json,sys; print('Chrome ready:', json.load(sys.stdin).get('Browser',''))"
 ```
 
-**Headless Chrome (option 2):**
-```python
-    browser = p.chromium.launch_persistent_context(
-        user_data_dir="~/.parenting/profiles/youtube/",
-        headless=True,
-    )
-    page = browser.new_page()
+**After launching**, tell the user:
+
+> Chrome is open and showing YouTube. Please **sign in to your Google account** in that window — the one with your child's watch history. Come back here once you're signed in.
+
+**Detect sign-in**: Poll every 3 seconds (up to 60 seconds) until the history page shows videos:
+
+```bash
+for i in $(seq 1 20); do
+  STATUS=$(curl -s http://localhost:9222/json | python3 -c "
+import json, sys, urllib.request
+tabs = json.load(sys.stdin)
+yt_tab = next((t for t in tabs if 'youtube.com' in t.get('url','')), None)
+print(yt_tab.get('url','') if yt_tab else 'no_tab')
+" 2>/dev/null)
+  echo "[$i] $STATUS"
+  # Check if signed in by reading page title via CDP
+  SIGNED_IN=$(curl -s "http://localhost:9222/json" | python3 -c "
+import json, sys
+tabs = json.load(sys.stdin)
+yt = next((t for t in tabs if 'youtube.com/feed/history' in t.get('url','')), None)
+print('yes' if yt and 'Watch history' in yt.get('title','') else 'no')
+" 2>/dev/null)
+  if [ "$SIGNED_IN" = "yes" ]; then
+    echo "Signed in — continuing."
+    break
+  fi
+  sleep 3
+done
 ```
 
-Using a **persistent context** (`user_data_dir`) means Google login is saved between runs — the user only logs in once.
+Alternatively, use the Chrome DevTools MCP to check:
+```
+navigate to https://www.youtube.com/feed/history
+evaluate_script: () => document.title
+```
+If the title contains the user's channel name or "Watch history" with videos present (not "Sign in"), proceed. If still showing "Sign in" after 60 seconds, prompt:
+> I don't see you're signed in yet. Please sign in to YouTube in the Chrome window, then let me know.
 
-### Step 2: Navigate and verify login
+### Step 1: Find the YouTube history tab
 
-```python
-page.goto("https://myactivity.google.com/product/youtube")
-page.wait_for_load_state("networkidle", timeout=15000)
+Get the Chrome tab ID for the history page via CDP:
 
-# Check if login is required
-if "accounts.google.com" in page.url or page.locator("text=Sign in").count() > 0:
-    if headless:
-        raise RuntimeError(
-            "Not logged in and running headless. Re-run with headed Chrome to log in first."
-        )
-    print("Please log in to your Google account in the browser window.")
-    print("Press Enter here once you are signed in and can see your activity...")
-    input()
-    page.wait_for_url("*myactivity.google.com*", timeout=60000)
+```bash
+HISTORY_TAB_ID=$(curl -s http://localhost:9222/json | python3 -c "
+import json, sys
+tabs = json.load(sys.stdin)
+yt = next((t for t in tabs if 'youtube.com/feed/history' in t.get('url','')), None)
+if not yt:
+    print('ERROR: no history tab found')
+else:
+    print(yt['id'])
+")
+echo "History tab: $HISTORY_TAB_ID"
 ```
 
-### Step 3: Filter by date range
-
-Navigate to YouTube history with the correct date filter:
-
-```python
-from datetime import datetime, timedelta
-
-cutoff = datetime.now() - timedelta(days=N_DAYS)
-cutoff_str = cutoff.strftime("%Y%m%d")  # e.g. 20260101
-
-# myactivity.google.com supports date range via URL params
-url = (
-    f"https://myactivity.google.com/product/youtube"
-    f"?hl=en&startTime={cutoff_str}&endTime={datetime.now().strftime('%Y%m%d')}"
-)
-page.goto(url)
-page.wait_for_load_state("networkidle", timeout=15000)
+If no history tab is found, navigate there using the MCP tool or:
+```bash
+# Navigate existing tab via CDP (replace TAB_ID)
+curl -s -X POST http://localhost:9222/json/activate/$HISTORY_TAB_ID
 ```
 
-### Step 4: Scroll and extract history items
+Then open `https://www.youtube.com/feed/history` in the Chrome window manually.
 
-YouTube activity is rendered in an infinite-scroll list. Scroll until no new items load or the oldest visible date is before the cutoff:
+### Step 2: Scroll to load all history items
 
-```python
-import json, re
-from datetime import datetime
-
-videos = []
-seen_urls = set()
-last_height = 0
-
-while True:
-    # Extract all visible history items
-    items = page.query_selector_all("div[data-ved] a[href*='youtube.com/watch']")
-    for item in items:
-        href = item.get_attribute("href") or ""
-        if not href or href in seen_urls:
-            continue
-        seen_urls.add(href)
-
-        # Extract video ID
-        vid_match = re.search(r"v=([A-Za-z0-9_-]{11})", href)
-        if not vid_match:
-            continue
-        video_id = vid_match.group(1)
-
-        # Title is usually the link text or nearby heading
-        title = item.inner_text().strip() or "Unknown"
-
-        # Timestamp — look for adjacent time element
-        parent = item.evaluate_handle("el => el.closest('div[data-ved]')")
-        time_el = parent.query_selector("span[class*='time'], div[class*='time']")
-        watched_at = time_el.inner_text().strip() if time_el else ""
-
-        videos.append({
-            "video_id": video_id,
-            "title": title,
-            "url": f"https://www.youtube.com/watch?v={video_id}",
-            "watched_at_raw": watched_at,
-        })
-
-    # Scroll down
-    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-    page.wait_for_timeout(1500)
-
-    new_height = page.evaluate("document.body.scrollHeight")
-    if new_height == last_height:
-        break  # no more content loaded
-    last_height = new_height
-```
-
-### Step 5: Enrich with YouTube Data API v3
-
-For each unique `video_id`, fetch metadata in batches of 50 (API limit):
+YouTube history uses infinite scroll. Scroll down until no new items load:
 
 ```python
-import requests, math
+import asyncio, json, websockets
 
-API_KEY = load_env("YOUTUBE_API_KEY")  # from .env
-BASE = "https://www.googleapis.com/youtube/v3/videos"
+WS_URL = f"ws://localhost:9222/devtools/page/{TAB_ID}"
 
-def fetch_video_metadata(video_ids: list[str]) -> dict:
-    results = {}
-    for i in range(0, len(video_ids), 50):
-        batch = video_ids[i:i+50]
-        resp = requests.get(BASE, params={
-            "key": API_KEY,
-            "id": ",".join(batch),
-            "part": "snippet,contentDetails,statistics,status",
-        })
-        for item in resp.json().get("items", []):
-            vid_id = item["id"]
-            snippet = item.get("snippet", {})
-            content = item.get("contentDetails", {})
-            stats   = item.get("statistics", {})
-            status  = item.get("status", {})
+SCROLL_JS = """
+(async () => {
+  let lastCount = 0;
+  for (let i = 0; i < 30; i++) {
+    window.scrollTo(0, document.body.scrollHeight);
+    await new Promise(r => setTimeout(r, 1500));
+    const count = document.querySelectorAll('div[class*="content-id-"]').length;
+    if (count === lastCount) break;
+    lastCount = count;
+  }
+  return lastCount;
+})()
+"""
 
-            # Parse ISO 8601 duration → minutes
-            duration_iso = content.get("duration", "PT0S")
-            duration_mins = parse_iso_duration_to_mins(duration_iso)
-
-            # Classify: Shorts ≤ 1 min, Long > 1 min
-            video_type = "short" if duration_mins <= 1 else "long"
-
-            results[vid_id] = {
-                "title":          snippet.get("title", ""),
-                "description":    snippet.get("description", "")[:500],  # truncate
-                "channel_name":   snippet.get("channelTitle", ""),
-                "channel_id":     snippet.get("channelId", ""),
-                "published_at":   snippet.get("publishedAt", ""),
-                "tags":           snippet.get("tags", []),
-                "category_id":    snippet.get("categoryId", ""),
-                "made_for_kids":  status.get("madeForKids", None),
-                "duration_mins":  round(duration_mins, 1),
-                "video_type":     video_type,   # "short" | "long"
-                "view_count":     int(stats.get("viewCount", 0)),
-                "like_count":     int(stats.get("likeCount", 0)),
-                "thumbnail_url":  snippet.get("thumbnails", {}).get("medium", {}).get("url", ""),
-                "url":            f"https://www.youtube.com/watch?v={vid_id}",
-            }
-    return results
-
-def parse_iso_duration_to_mins(iso: str) -> float:
-    """Convert PT4M13S → 4.22 minutes."""
-    match = re.match(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", iso)
-    if not match:
-        return 0
-    h, m, s = (int(x or 0) for x in match.groups())
-    return h * 60 + m + s / 60
+async with websockets.connect(WS_URL) as ws:
+    await ws.send(json.dumps({"id": 1, "method": "Runtime.enable"}))
+    await ws.recv()
+    await ws.send(json.dumps({
+        "id": 2, "method": "Runtime.evaluate",
+        "params": {"expression": SCROLL_JS, "returnByValue": True, "awaitPromise": True}
+    }))
+    while True:
+        msg = json.loads(await ws.recv())
+        if msg.get("id") == 2: break
+    count = msg["result"]["result"].get("value", 0)
+    print(f"Loaded {count} history items")
 ```
 
-### Step 6: Merge and write JSON output
+### Step 3: Extract history items via CDP
+
+YouTube's history page renders each video as `div[class*="content-id-{videoId}"]`. Confirmed working selectors:
+
+| Field | Selector |
+|-------|----------|
+| Container | `div[class*="content-id-"]` |
+| Video ID | `content-id-{11chars}` in class name |
+| Duration | `.yt-badge-shape__text` |
+| Title | `span.yt-core-attributed-string:not(.yt-content-metadata-view-model__metadata-text)` |
+| Channel | `span.yt-content-metadata-view-model__metadata-text` (first) |
+| Views | `span.yt-content-metadata-view-model__metadata-text` (second) |
+| Thumbnail | `img` (first inside container) |
 
 ```python
-# Merge browser-scraped history with API metadata
+EXTRACT_JS = """
+(() => {
+  const results = [];
+  document.querySelectorAll('div[class*="content-id-"]').forEach(item => {
+    const m = item.className.match(/content-id-([A-Za-z0-9_-]{11})/);
+    if (!m) return;
+    const videoId = m[1];
+
+    const durationEl = item.querySelector('.yt-badge-shape__text');
+    const titleEl    = item.querySelector(
+      'span.yt-core-attributed-string:not(.yt-content-metadata-view-model__metadata-text)'
+    );
+    const metaSpans  = item.querySelectorAll('span.yt-content-metadata-view-model__metadata-text');
+    const img        = item.querySelector('img');
+
+    results.push({
+      videoId,
+      title:       titleEl?.textContent?.trim() || '',
+      channel:     metaSpans[0]?.textContent?.trim() || '',
+      views:       metaSpans[1]?.textContent?.trim() || '',
+      durationRaw: durationEl?.textContent?.trim() || '',
+      thumbnail:   img?.src || '',
+    });
+  });
+  return results;
+})()
+"""
+```
+
+### Step 4: Parse duration and classify video type
+
+```python
+import re, datetime
+
+def parse_duration_secs(raw: str) -> int:
+    parts = raw.strip().split(":")
+    try:
+        if len(parts) == 2:   return int(parts[0]) * 60 + int(parts[1])
+        if len(parts) == 3:   return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    except Exception:
+        pass
+    return 0
+
 enriched = []
-for v in videos:
-    meta = api_results.get(v["video_id"], {})
+for v in videos_raw:
+    secs = parse_duration_secs(v["durationRaw"])
+    mins = round(secs / 60, 1)
     enriched.append({
-        # Watch event fields (from browser)
-        "watched_at": v["watched_at_raw"],
-        # Video identity
-        "video_id":    v["video_id"],
-        "url":         v["url"],
-        "title":       meta.get("title") or v["title"],
-        # Video metadata (from API)
-        "description":    meta.get("description", ""),
-        "channel_name":   meta.get("channel_name", ""),
-        "channel_id":     meta.get("channel_id", ""),
-        "published_at":   meta.get("published_at", ""),
-        "tags":           meta.get("tags", []),
-        "category_id":    meta.get("category_id", ""),
-        "made_for_kids":  meta.get("made_for_kids"),
-        "duration_mins":  meta.get("duration_mins", 0),
-        "video_type":     meta.get("video_type", "unknown"),  # "short" | "long"
-        "view_count":     meta.get("view_count", 0),
-        "like_count":     meta.get("like_count", 0),
-        "thumbnail_url":  meta.get("thumbnail_url", ""),
+        "videoId":     v["videoId"],
+        "title":       v["title"],
+        "url":         f"https://www.youtube.com/watch?v={v['videoId']}",
+        "channel":     v["channel"],
+        "views":       v["views"],
+        "durationRaw": v["durationRaw"],
+        "durationMins": mins,
+        "videoType":   "short" if 0 < secs <= 60 else "long",
+        "thumbnail":   v["thumbnail"],
+        "scrapedAt":   datetime.datetime.now().isoformat(),
     })
+```
 
-# Sort by watched_at descending
-enriched.sort(key=lambda x: x["watched_at"], reverse=True)
+### Step 5: Write JSON output
 
-# Write output
-from pathlib import Path
-import json
-out_path = Path(f"user_docs/watch_history_{child_name}_{datetime.now().strftime('%Y%m%d')}.json")
-out_path.parent.mkdir(exist_ok=True)
-out_path.write_text(json.dumps({"scraped_at": datetime.now().isoformat(),
-                                 "child": child_name,
-                                 "days": N_DAYS,
-                                 "total_videos": len(enriched),
-                                 "videos": enriched}, indent=2))
+```python
+import json, os
+
+today = datetime.date.today().isoformat()
+out_dir = "user_docs"
+os.makedirs(out_dir, exist_ok=True)
+out_path = os.path.join(out_dir, f"watch_history_{today}.json")
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(enriched, f, indent=2, ensure_ascii=False)
 print(f"Saved {len(enriched)} videos → {out_path}")
 ```
 
 ### Output JSON schema
 
 ```json
-{
-  "scraped_at": "2026-03-31T09:00:00",
-  "child": "emma",
-  "days": 30,
-  "total_videos": 142,
-  "videos": [
-    {
-      "watched_at": "Mar 30, 2026, 4:12 PM",
-      "video_id": "dQw4w9WgXcQ",
-      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "title": "Example Kids Video",
-      "description": "A fun learning video for kids...",
-      "channel_name": "SciShow Kids",
-      "channel_id": "UCZVhFRrFcSYkMkh5LA9RD2Q",
-      "published_at": "2025-06-15T14:00:00Z",
-      "tags": ["science", "kids", "learning"],
-      "category_id": "27",
-      "made_for_kids": true,
-      "duration_mins": 5.2,
-      "video_type": "long",
-      "view_count": 1423000,
-      "like_count": 18400,
-      "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg"
-    }
-  ]
-}
+[
+  {
+    "videoId": "3ryID_SwU5E",
+    "title": "$1 vs $100,000,000 House!",
+    "url": "https://www.youtube.com/watch?v=3ryID_SwU5E",
+    "channel": "MrBeast",
+    "views": "416M views",
+    "durationRaw": "17:03",
+    "durationMins": 17.1,
+    "videoType": "long",
+    "thumbnail": "https://i.ytimg.com/vi/3ryID_SwU5E/hqdefault.jpg",
+    "scrapedAt": "2026-03-31T09:00:00"
+  }
+]
 ```
 
-### Step 7: Summary printout
+### Step 6: Summary printout
 
 After saving, print a quick summary:
 
 ```
-Watch history scraped: 142 videos over last 30 days
+Watch history scraped: 112 videos
 
 By type:
-  Long videos : 98 (69%)
-  Shorts      : 44 (31%)
+  Long videos : 112 (100%)
+  Shorts      :   0   (0%)
 
 Top channels:
-  1. SciShow Kids        — 23 videos, avg 6.1 min
-  2. Cocomelon           — 18 videos, avg 3.2 min
-  3. Blippi               — 14 videos, avg 8.7 min
+  1. Inglês Essencial    — 23 videos
+  2. Peekaboo Kidz       — 21 videos
+  3. Jordan Matter       —  6 videos
 
-Output: user_docs/watch_history_emma_20260331.json
+Output: user_docs/watch_history_2026-03-31.json
 
-Next: run '/youtube-kids-audit --profile emma --output report' to analyze content.
+Next: run '/youtube-kids-audit --output report' to analyze content.
 ```
 
 ---
 
 ## Implementation checklist
 
-**Scrape watch history**
-- [ ] Prompt user to choose headed vs headless Chrome; save preference to `user_docs/youtube_audit_config.md`
-- [ ] Launch Playwright persistent context (`~/.parenting/profiles/youtube/`)
-- [ ] Detect login wall; pause for manual login if headed; raise error if headless + not logged in
-- [ ] Navigate to `myactivity.google.com/product/youtube` with date filter
-- [ ] Infinite-scroll and extract video IDs + titles + timestamps
-- [ ] Batch-enrich with YouTube Data API v3 (snippet, contentDetails, statistics, status)
-- [ ] Parse ISO 8601 duration → decimal minutes; classify as `short` (≤1 min) or `long`
-- [ ] Write `user_docs/watch_history_<child>_<date>.json` with full schema
-- [ ] Print summary: total videos, type breakdown, top channels
+**Scrape watch history (CDP approach — no API key required)**
+- [x] Detect Chrome on port 9222; offer to launch if missing (Step 0)
+- [x] Poll for sign-in via tab title check
+- [x] Navigate to `youtube.com/feed/history` in headed Chrome
+- [x] Infinite-scroll to load all history items
+- [x] Extract via CDP: `div[class*="content-id-"]` → title, channel, duration, thumbnail
+- [x] Parse `MM:SS` / `H:MM:SS` duration → decimal minutes; classify short (≤60s) vs long
+- [x] Write `user_docs/watch_history_<date>.json`
+- [x] Print summary: total videos, type breakdown, top channels
 
 **Analysis (next phase)**
 - [ ] Deduplicate by channel; compute per-channel total watch minutes
