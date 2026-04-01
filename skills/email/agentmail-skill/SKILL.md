@@ -39,23 +39,27 @@ See `monitor-human-reply/SKILL.md` and `scan-emails/SKILL.md` for full docs.
 
 ```bash
 # Send a message
-/agentmail-skill send \
-  --from your-agent@agentmail.to \
+python3 scripts/email/agentmail.py send \
+  --from weizhengzhou@agentmail.to \
   --to your-email@example.com \
   --subject "Weekly digest ready" \
   --body "Hi, your Monday digest is attached..."
 
 # Read a specific message
-/agentmail-skill read --inbox your-agent@agentmail.to --message-id <id>
+python3 scripts/email/agentmail.py read --inbox weizhengzhou@agentmail.to --id <msg_id>
+
+# List recent messages (last 24h)
+python3 scripts/email/agentmail.py list --inbox weizhengzhou@agentmail.to --since 24h
 
 # Reply to a thread
-/agentmail-skill reply \
-  --inbox your-agent@agentmail.to \
+python3 scripts/email/agentmail.py reply \
+  --inbox weizhengzhou@agentmail.to \
+  --to your-email@example.com \
   --thread-id <thread_id> \
   --body "Thanks, I'll schedule that."
 
 # List available inboxes
-/agentmail-skill list-inboxes
+python3 scripts/email/agentmail.py list-inboxes
 
 # Check for new human replies (run once, good for cron)
 /agentmail-skill monitor-human-reply --once
@@ -63,6 +67,25 @@ See `monitor-human-reply/SKILL.md` and `scan-emails/SKILL.md` for full docs.
 # Scan last 24h of inbox
 /agentmail-skill scan-emails --since 24h --output summary
 ```
+
+## Python script: `scripts/email/agentmail.py`
+
+All low-level API calls (auth, URL encoding, HTTP) are handled by `scripts/email/agentmail.py`.
+**Use this script instead of reimplementing curl calls.** It handles:
+- Credential loading (env var → `.env` → macOS Keychain)
+- `inbox_id` URL encoding
+- Error messages from the API
+- `--since` time filtering for list
+
+```
+scripts/email/agentmail.py send   --from INBOX --to ADDR --subject S --body B
+scripts/email/agentmail.py read   --inbox INBOX --id MSG_ID
+scripts/email/agentmail.py list   --inbox INBOX [--limit 20] [--since 24h|7d|YYYY-MM-DD]
+scripts/email/agentmail.py reply  --inbox INBOX --to ADDR --body B [--thread-id T] [--subject S]
+scripts/email/agentmail.py list-inboxes
+```
+
+All commands accept `--output json` for machine-readable output.
 
 ---
 
@@ -96,22 +119,14 @@ Do not proceed with send operations until all three are configured.
 ### API call
 
 ```bash
-INBOX_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$FROM_EMAIL', safe=''))")
-
-curl -s -X POST \
-  -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"to\": [\"$TO\"],
-    \"subject\": \"$SUBJECT\",
-    \"text\": \"$BODY\"
-  }" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/send"
+python3 scripts/email/agentmail.py send \
+  --from "$FROM_EMAIL" \
+  --to "$TO" \
+  --subject "$SUBJECT" \
+  --body "$BODY"
 ```
 
-Success response: `{"message_id": "...", "thread_id": "..."}`
-
-Report both to the user. On error, show `name` and `message` from response.
+Success output: `{"message_id": "...", "thread_id": "..."}` — report both to the user.
 
 ### Mobile formatting (from kid_camp2 learnings)
 
@@ -126,11 +141,8 @@ The human likely reads email on mobile. Apply these rules to every composed body
 
 ## Core action: list-inboxes
 
-Fetch from API and merge with config:
-
 ```bash
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes"
+python3 scripts/email/agentmail.py list-inboxes
 ```
 
 Display: `inbox_id`, `display_name`, `created_at` for each. Mark which is the `default`.
@@ -140,8 +152,7 @@ Display: `inbox_id`, `display_name`, `created_at` for each. Mark which is the `d
 ## Core action: read
 
 ```bash
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/${MSG_ID_ENCODED}"
+python3 scripts/email/agentmail.py read --inbox "$INBOX" --id "$MSG_ID"
 ```
 
 Display: `from`, `to`, `subject`, `created_at`, full `text` body.
@@ -151,15 +162,15 @@ Display: `from`, `to`, `subject`, `created_at`, full `text` body.
 
 ## Core action: reply
 
-Fetch the original message first (to get thread context), then send with `Re:` subject prefix:
+Fetch the original message first (to get thread context), then reply:
 
 ```bash
-# Reply endpoint (if supported by API)
-curl -s -X POST \
-  -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"to\": [\"$ORIGINAL_SENDER\"], \"subject\": \"Re: $ORIGINAL_SUBJECT\", \"text\": \"$BODY\"}" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/send"
+python3 scripts/email/agentmail.py reply \
+  --inbox "$INBOX" \
+  --to "$ORIGINAL_SENDER" \
+  --subject "$ORIGINAL_SUBJECT" \
+  --thread-id "$THREAD_ID" \
+  --body "$BODY"
 ```
 
 **Safety:** Verify `$ORIGINAL_SENDER` is in `human_owners` before replying.

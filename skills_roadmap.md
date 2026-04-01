@@ -71,7 +71,7 @@ This makes status machine-readable and lets the community see at a glance what's
 
 | Command | Description | Priority | Status |
 |---------|-------------|----------|--------|
-| `/draft-teacher-email` | Draft emails to teachers given a plain-English situation ("Emma struggled with the last math test, ask for extra help") | High | `idea` |
+| `/draft-teacher-email` | Draft emails to teachers given a plain-English situation ("Emma struggled with the last math test, ask for extra help") | High | `draft` |
 | `/permission-slip-tracker` | Monitor school emails for permission slips, flag unsigned ones, send reminders before due date | High | `idea` |
 | `/college-app-tracker` | Track deadlines, requirements, essay prompts, and status across schools — for high schoolers | Medium | `idea` |
 | `/iep-meeting-prep` | Summarize recent progress notes and draft questions before an IEP/504 meeting | Medium | `idea` |
@@ -92,7 +92,7 @@ This makes status machine-readable and lets the community see at a glance what's
 
 | Command | Description | Priority | Status |
 |---------|-------------|----------|--------|
-| `/meal-planner` | Generate a weekly kid-friendly meal plan given dietary restrictions, output a grocery list | High | `idea` |
+| `/meal-planner` | Generate a weekly kid-friendly meal plan given dietary restrictions, output a grocery list | High | `draft` |
 | `/check-school-menu` | Scrape this week's cafeteria menu, flag days with known allergens or disliked items | Medium | `idea` |
 
 ---

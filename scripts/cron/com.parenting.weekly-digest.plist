@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Weekly family digest — runs every Monday at 7:00 AM.
+
+  Setup:
+    1. Edit WorkingDirectory to your repo path
+    2. Edit AGENTMAIL_API_KEY (or load from .env instead)
+    3. cp scripts/cron/com.parenting.weekly-digest.plist ~/Library/LaunchAgents/
+    4. launchctl load ~/Library/LaunchAgents/com.parenting.weekly-digest.plist
+
+  Test:
+    launchctl start com.parenting.weekly-digest
+
+  Logs:
+    tail -f /tmp/parenting-weekly-digest.log
+
+  Remove:
+    launchctl unload ~/Library/LaunchAgents/com.parenting.weekly-digest.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.parenting.weekly-digest</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/claude</string>
+    <string>--dangerously-skip-permissions</string>
+    <string>-p</string>
+    <string>/weekly-digest</string>
+  </array>
+
+  <!-- EDIT: set to your repo path -->
+  <key>WorkingDirectory</key>
+  <string>/path/to/awesome-parenting-skills</string>
+
+  <!-- Every Monday at 7:00 AM -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>7</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <!-- EDIT: set your API key, or load from .env in the skill -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>AGENTMAIL_API_KEY</key>
+    <string>your_agentmail_api_key_here</string>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/parenting-weekly-digest.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/parenting-weekly-digest.err</string>
+
+  <!-- Restart if it crashes -->
+  <key>KeepAlive</key>
+  <false/>
+</dict>
+</plist>

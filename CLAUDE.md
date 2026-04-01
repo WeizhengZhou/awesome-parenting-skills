@@ -65,7 +65,11 @@ This is a public repo of reusable Claude Code skills, agents, and community data
 skills/<category>/<name>/SKILL.md   ← skill source (symlinked to ~/.claude/skills/)
 agents/<name>.md                    ← agent definitions
 community/                          ← curated data safe for public (no personal data)
-scripts/                            ← shared Python utilities (agentmail.py, etc.)
+scripts/                            ← shared Python utilities, organized by category
+scripts/calendar/gcal.py            ← ICS calendar fetcher and markdown/HTML renderer
+scripts/email/agentmail.py          ← AgentMail API wrapper (send, list, read, reply)
+scripts/email/digest_to_html.py     ← convert weekly digest markdown to HTML email
+scripts/cron/                       ← macOS launchd plist files
 user_docs_template/                 ← committed templates — copy to user_docs/ on setup
 user_docs/                          ← your personal config (gitignored — never committed)
 .env_template                       ← copy to .env (gitignored) for API keys

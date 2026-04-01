@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Weekend event finder — runs every Friday at 8:00 AM.
+  Searches for weekend activities and saves to user_docs/activities/,
+  so /weekly-digest can include them in the Monday email.
+
+  Setup:
+    1. Edit WorkingDirectory to your repo path
+    2. cp scripts/cron/com.parenting.weekend-events.plist ~/Library/LaunchAgents/
+    3. launchctl load ~/Library/LaunchAgents/com.parenting.weekend-events.plist
+
+  Logs:
+    tail -f /tmp/parenting-weekend-events.log
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.parenting.weekend-events</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/claude</string>
+    <string>--dangerously-skip-permissions</string>
+    <string>-p</string>
+    <string>/weekend-fun-events</string>
+  </array>
+
+  <!-- EDIT: set to your repo path -->
+  <key>WorkingDirectory</key>
+  <string>/path/to/awesome-parenting-skills</string>
+
+  <!-- Every Friday at 8:00 AM -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>5</integer>
+    <key>Hour</key>
+    <integer>8</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>AGENTMAIL_API_KEY</key>
+    <string>your_agentmail_api_key_here</string>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/parenting-weekend-events.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/parenting-weekend-events.err</string>
+
+  <key>KeepAlive</key>
+  <false/>
+</dict>
+</plist>

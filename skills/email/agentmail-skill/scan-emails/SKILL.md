@@ -57,23 +57,20 @@ Optionally save to user_docs/email_summaries/
 ## Step 1: Fetch message list
 
 ```bash
-AGENTMAIL_API_KEY=$(load_api_key)
-
-# List messages
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages?limit=${LIMIT}"
+python3 scripts/email/agentmail.py list \
+  --inbox "$INBOX" \
+  --limit "$LIMIT" \
+  --since "$SINCE" \
+  --output json
 ```
 
-Response: `{"messages": [{message_id, from, subject, created_at, ...}]}`
-
-Apply `--since` filter: parse `created_at` and discard messages older than the window.
+Returns JSON array of messages with `message_id`, `from`, `subject`, `created_at`.
 
 ## Step 2: Fetch full content
 
 For each message in the filtered list:
 ```bash
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/${MSG_ID_ENCODED}"
+python3 scripts/email/agentmail.py read --inbox "$INBOX" --id "$MSG_ID" --output json
 ```
 
 Extract: `subject`, `from`, `to`, `created_at`, `text` (use `html` only as fallback).
@@ -170,7 +167,4 @@ Shows complete content of the 5 most recent messages.
 
 ## Credential loading
 
-Same as `monitor-human-reply`:
-1. `$AGENTMAIL_API_KEY` env var
-2. `.env` file: `grep '^AGENTMAIL_API_KEY=' .env | cut -d= -f2-`
-3. macOS Keychain: `security find-generic-password -s agentmail -w`
+Handled automatically by `scripts/email/agentmail.py` (env var → `.env` → macOS Keychain).

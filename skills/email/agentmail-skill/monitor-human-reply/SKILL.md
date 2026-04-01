@@ -50,14 +50,10 @@ For each new message:
 ## Step 1: Fetch inbox
 
 ```bash
-AGENTMAIL_API_KEY=$(load_api_key)   # see credential loading below
-INBOX=$(read_config default_inbox)
-
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages?limit=20"
+python3 scripts/email/agentmail.py list --inbox "$INBOX" --limit 20 --output json
 ```
 
-Response shape: `{"messages": [{message_id, from, subject, created_at, ...}]}`
+Returns JSON array with `message_id`, `from`, `subject`, `created_at`.
 
 ## Step 2: Filter and deduplicate
 
@@ -69,8 +65,7 @@ Response shape: `{"messages": [{message_id, from, subject, created_at, ...}]}`
 
 For each new message:
 ```bash
-curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/${MSG_ID_ENCODED}"
+python3 scripts/email/agentmail.py read --inbox "$INBOX" --id "$MSG_ID" --output json
 ```
 Response includes `text` (plain) and `html` fields. Use `text` for classification.
 
@@ -161,13 +156,14 @@ Reply format (mobile-friendly — from kid_camp2 mobile formatting guidelines):
   Next: [if any]
   ```
 
-Send via AgentMail API:
+Send via AgentMail script:
 ```bash
-curl -s -X POST \
-  -H "Authorization: Bearer $AGENTMAIL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"to\":[\"$HUMAN_EMAIL\"],\"subject\":\"Re: $SUBJECT\",\"text\":\"$BODY\"}" \
-  "https://api.agentmail.to/v0/inboxes/${INBOX_ENCODED}/messages/send"
+python3 scripts/email/agentmail.py reply \
+  --inbox "$INBOX" \
+  --to "$HUMAN_EMAIL" \
+  --subject "$SUBJECT" \
+  --thread-id "$THREAD_ID" \
+  --body "$BODY"
 ```
 
 ## Step 7: Update state + log
@@ -184,13 +180,10 @@ Append the `message_id` to `processed_message_ids` after handling.
 [YYYY-MM-DD HH:MM] REPLY | from: <sender> | subject: <subject> | category: <CATEGORY> | action: <summary>
 ```
 
-## Credential loading (in priority order)
+## Credential loading
 
-1. `$AGENTMAIL_API_KEY` environment variable
-2. `.env` file in project root: `grep '^AGENTMAIL_API_KEY=' .env | cut -d= -f2-`
-3. macOS Keychain: `security find-generic-password -s agentmail -w`
-
-If none found: prompt human to set up `.env` from `.env_template`.
+Handled automatically by `scripts/email/agentmail.py` (env var → `.env` → macOS Keychain).
+If none found, the script exits with a helpful message.
 
 ## Scheduling with /mac-cron-job
 

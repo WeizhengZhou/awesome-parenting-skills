@@ -2,14 +2,10 @@
 .env
 *.env.local
 
-# User-specific state and personal data (not committed — see user_docs/agentmail_config.md)
-user_docs/agentmail_reply_state.json
-user_docs/reply_log.md
-user_docs/feedback_log.md
-user_docs/email_summaries/
-user_docs/scheduled_tasks/
-user_docs/watch_history*.json
-user_docs/kid_profile/*_analysis_*.md
+# user_docs/ is local-only personal data — never committed
+# Use user_docs_template/ (committed) as the starting point: cp -r user_docs_template/ user_docs/
+user_docs/
+!user_docs_template/
 
 # macOS
 .DS_Store
@@ -30,3 +26,6 @@ venv/
 /tmp/
 *.tmp
 __pycache__/
+
+# Claude Code local settings (project-specific permissions, not for sharing)
+.claude/
