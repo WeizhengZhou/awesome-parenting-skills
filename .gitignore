@@ -9,6 +9,7 @@ user_docs/feedback_log.md
 user_docs/email_summaries/
 user_docs/scheduled_tasks/
 user_docs/watch_history*.json
+user_docs/kid_profile/*_analysis_*.md
 
 # macOS
 .DS_Store

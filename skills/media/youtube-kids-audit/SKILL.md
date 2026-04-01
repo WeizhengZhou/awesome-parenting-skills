@@ -1,23 +1,35 @@
 # Skill: youtube-kids-audit
 
-> **Status: PLACEHOLDER** — Not yet implemented. Contributions welcome.
-
 Browse a child's YouTube / YouTube Kids watch history, analyze content patterns, and recommend channels/videos to add, keep, remove, or block.
+
+## Sub-skills
+
+| Sub-skill | Command | Description |
+|-----------|---------|-------------|
+| Scrape history | `/youtube-kids-audit` | CDP WebSocket scrape of `youtube.com/feed/history` (this file) |
+| Analyze content | `/youtube-kids-audit analyze-kids-content` | Filter kid vs adult, classify, safety check, recommend |
+
+See `analyze-kids-content/SKILL.md` for the full analysis pipeline.
 
 ## Usage
 
 ```
-/youtube-kids-audit [--profile <child-name>] [--days 30] [--output report|actions]
+# Step 1 — scrape watch history from signed-in Chrome
+/youtube-kids-audit [--days 30]
+
+# Step 2 — analyze and generate educational report (uses claude-opus-4-6)
+/youtube-kids-audit analyze-kids-content [--profile <child-name>]
 ```
 
-## Planned capabilities
+## Capabilities
 
-- Pull watch history from YouTube Kids app or supervised Google account
-- Classify each channel/video by: topic, age-appropriateness, educational value, screen-time pattern
-- Identify channels the child watches frequently → prompt parent to subscribe or block
-- Flag concerning content (excessive violence, inappropriate language, predatory comment patterns, misleading thumbnails)
-- Generate a parent-readable report with approve / remove / block recommendations
-- Execute approved actions: subscribe to channel, remove from history, add to blocked list in Family Link
+- Scrape watch history via Chrome DevTools Protocol (no YouTube API key required)
+- Filter mixed adult/kid accounts using a kid profile noise filter
+- Classify each video: Fantasy/Lore, Science, Math, Language Arts, Junk Food, Adult/Irrelevant
+- Flag age-inappropriate or concerning content
+- Recommend YouTube channels and books tailored to the child's learning style
+- Gap analysis: identify missing "nutrients" in the content diet
+- First-run intake: if no kid profile exists, interview the parent and write `user_docs/kid_profile/<name>.md`
 
 ## Arguments (planned)
 
