@@ -644,7 +644,81 @@ community/bay-area/
 
 ---
 
-## 15. Key External Resources
+## 15. Skill Quality & Ecosystem — ClawHub Research
+
+### What is ClawHub?
+
+[ClawHub](https://clawhub.ai/) (also called OpenClaw Hub) is the dominant public skills marketplace for AI coding agents — described as "npm for AI agents." As of early 2026 it hosts ~3,300 skills (down from 5,700+ after a security purge). Skills use a `SKILL.md` format closely modeled on Claude Code conventions, and the platform supports Claude Code, Codex, Gemini CLI, and Cursor.
+
+Relevance to this repo: ClawHub is the closest analog to what awesome-parenting-skills is building, and their quality model is a useful reference — both for what to adopt and what to avoid.
+
+### How ClawHub tracks quality
+
+| Signal | Mechanism |
+|--------|-----------|
+| **Star ratings (1–5)** | User-submitted after installation; displayed publicly with download counts |
+| **Download counts** | Raw install numbers used as the primary reputation proxy |
+| **Verified badge** | Manual review by OpenClaw team: security + tests + docs + active maintenance. Grants priority placement in search. |
+| **VirusTotal scanning** | Auto-scan on every submission — added after the Feb 2026 breach |
+| **Code signing** | Required on all new submissions post-breach |
+| **3-report auto-hide** | Community flags trigger moderator review |
+| **Semantic search** | Vector/embedding search (OpenAI) so users find skills by describing what they need |
+
+### The Feb 2026 security incident — lessons for this repo
+
+In February 2026, security firm SlashAudit found **1,467 malicious skills** in ClawHub — typosquatting attacks combined with prompt injection hidden inside SKILL.md files. Before detection, malicious skills averaged 847 installs each, affecting an estimated 200,000+ agent instances. The registry dropped from ~5,700 to ~3,286 skills after the purge.
+
+**What this means for us:** awesome-parenting-skills has a much smaller attack surface (skills run locally from a repo you control, not downloaded from a public registry), but the incident validates several design decisions already in place:
+- Mandatory `/privacy-audit` pre-commit gate
+- No third-party skill install path — you clone this repo directly
+- All files visible in git history
+
+### ClawHub SKILL.md frontmatter schema (for reference)
+
+ClawHub defines a richer frontmatter than we currently use. Worth adopting selectively:
+
+```yaml
+---
+name: skill-name
+description: one-line summary
+version: 1.0.0          # SemVer
+
+metadata:
+  openclaw:
+    requires:
+      env: [AGENTMAIL_API_KEY, NTFY_TOPIC]   # env vars that must exist
+      bins: [python3]                         # CLI tools that must be installed
+      anyBins: [brew, apt]                    # at least one must exist
+    os: [macos, linux]
+    homepage: https://github.com/...
+---
+```
+
+The `requires.env` and `requires.bins` patterns are particularly useful — they make setup failures self-explanatory and allow a future `/skill-health` checker to validate prerequisites automatically.
+
+### Where awesome-parenting-skills is ahead
+
+| Area | ClawHub | This repo |
+|------|---------|-----------|
+| Privacy audit | Added post-breach (VirusTotal) | Mandatory pre-commit gate from day one |
+| PII protection | No convention | Tiered audit (Tier 1 blocks commit) |
+| Local-first | Optional | Core design principle |
+| Status lifecycle | Verified badge or nothing | `idea → draft → implemented → verified` |
+| Eval framework | No standard | `evals/<category>/<name>/` per skill |
+| Quality checklist | None | 6-item checklist to reach `verified` |
+
+### Where ClawHub is ahead (gaps to close)
+
+| Gap | ClawHub | Our TODO |
+|-----|---------|----------|
+| Structured frontmatter | Well-defined schema with `requires.*` | Adopt `requires.env`, `requires.bins`, `os` fields |
+| Semantic search | Vector search across all skills | Not yet needed at this scale; revisit at 50+ skills |
+| Community ratings | Stars + download counts | Could use GitHub reactions on PRs as a proxy |
+| Automated eval runner | Not standard | TODO: cron job that runs `evals/` nightly |
+
+---
+
+## 16. Key External Resources
 
 | Resource | URL | Purpose |
 |----------|-----|---------|

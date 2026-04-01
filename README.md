@@ -2,192 +2,70 @@
 
 Reusable Claude Code skills, agents, and community data for automating family and parenting workflows.
 
+## Why this exists
+
+Parenting is a full-time job — on top of the actual full-time job.
+
+Between school pickups, homework check-ins, camp registrations, lunch account top-ups, activity signups, and the endless inbox of school newsletters, a meaningful chunk of every week goes to logistics. Not quality time. Not deep connection. Just chores.
+
+We're AI-native parents. We've seen what AI agents can do in software and business workflows — and we believe the same leverage belongs at home. Not to replace parenting, but to replace the parts we're bored of: the repetitive, the administrative, the "I have to remember to do this again" tasks that quietly drain the hours we'd rather spend with our kids.
+
+**The vision:** a shared library of Claude Code skills that any parent can install, run, and contribute to — purpose-built for the workflows that come up every week. Check grades. Find weekend events. Monitor a registration page until it opens. Audit what your kid is watching. Top up the lunch account before it hits zero. Schedule it all to run without you.
+
+**What makes this different:**
+
+- **AI-native from the start** — these aren't web apps or browser extensions. They're agent skills: composable, scriptable, and built to run inside Claude Code, which means they can reason, adapt, and chain together.
+- **Serious about delegation** — we want AI to do real work, not just answer questions. That means skills that actually submit forms, send emails, book appointments, and escalate to you only when a human decision is needed.
+- **Responsible by design** — your kids' data stays local. Skills are privacy-audited before merging. The repo is public; your `.env` and `user_docs/` are not.
+- **Safe and trustable** — AI agents acting on your behalf need guardrails, not just good intentions. We have a factuality checker to reduce hallucination, a privacy auditor to catch PII before it leaks, browser automation with explicit confirmation gates so nothing submits without your approval, and all files stay on your local machine. You stay in control; the agent does the legwork.
+- **Shared, not siloed** — the community data (school portals, local event sources, district configs) is curated and contributed by parents in the same cities, the same districts. You don't have to figure out where your city posts rec league signups. Someone already did.
+- **Community as a knowledge base** — parenting expertise shouldn't live in one parent's head or a sprawling Google Doc. When a friend asks how to navigate private school applications, the answer shouldn't be a wall of text in iMessage — it should be a skill: structured, reusable, shareable. This repo is a place for parents to encode what they know, so others don't have to start from scratch.
+
+The goal isn't to be less present as a parent. It's to be more present — by spending less time on the things that don't require you.
+
+---
+
+## You don't need to know the commands
+
+You don't need to memorize skill names or flags. Just open Claude Code and say what you need:
+
+> *"Check my daughter's grades and send me a summary."*
+
+> *"Find something fun to do with a 7-year-old this weekend in San Carlos."*
+
+> *"Set up a Monday morning reminder to top up the lunch account if it drops below $15."*
+
+> *"Audit what my kid has been watching on YouTube this week."*
+
+Claude Code will pick the right skill, ask for any missing info, and handle the rest. The slash commands exist for power users and automation — you never have to use them directly.
+
+---
+
 ## Quick start
 
-Skills are installed globally via symlinks — run any `/command` from any Claude Code session:
-
 ```bash
-# Link all skills to ~/.claude/skills/
+# 1. Clone the repo
+git clone https://github.com/your-org/awesome-parenting-skills
+cd awesome-parenting-skills
+
+# 2. Link all skills to ~/.claude/skills/
 for skill in skills/**/*; do
   name=$(basename $skill)
   ln -sf "$PWD/$skill" ~/.claude/skills/$name
 done
+
+# 3. Copy the env template and add your API keys
+cp .env_template .env
+
+# 4. Open Claude Code and start talking
+claude
 ```
 
----
-
-## Skills
-
-Skills live in `skills/<category>/<name>/SKILL.md` and are symlinked to `~/.claude/skills/<name>`.
-
-### academics
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/check-grades` | Pull grades, attendance, and assignments from school portals (PowerSchool, Infinite Campus, Canvas, Google Classroom) | Implemented |
-| `/analyze-report-card` | Ingest a PDF/photo report card, extract grades and teacher comments, generate a summer action plan | Placeholder |
-| `/weekly-digest` | Monday morning family summary: grades, upcoming assignments, events, lunch balances, action items | Implemented |
-
-### afterschools
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/find-events` | Find local kids events by city, age, and time window. Delegates to `kids-events-finder` agent | Implemented |
-| `/monitor-registration` | Watch a registration page (camp, class, sports) and send an alert when it opens | Implemented |
-
-### shopping
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/order-food` | Automate kid-friendly food orders from saved restaurant presets, with allergen check and parent confirmation gate | Placeholder |
-| `/top-up-lunch` | Check school lunch balances and top up via MySchoolBucks when below threshold | Implemented |
-
-### email
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/agentmail-skill` | Core AgentMail actions: send, read, reply, list-inboxes. Safety-gated — only sends to human owner allowlist | Placeholder |
-| `/agentmail-skill monitor-human-reply` | Poll inbox for replies from human owner, classify (approval/feedback/instruction/question), act and confirm | Placeholder |
-| `/agentmail-skill scan-emails` | Read-only inbox scan — summarize recent messages, filter by sender/keyword, optionally save to `user_docs/` | Placeholder |
-
-### media
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/youtube-kids-audit` | Analyze a child's YouTube watch history, classify channels by age-fit and educational value, and apply approved Family Link actions | Placeholder |
-
-### util
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `/info-gather` | Pull and deduplicate information from RSS, JSON APIs, and browser sources using a `sources.yaml` config | Implemented |
-| `/browser-automate` | Automate a Chrome task — school portals, registration forms, appointment booking, page monitoring | Implemented |
-| `/mac-cron-job` | Create, list, and debug scheduled automation tasks via launchd or crontab | Implemented |
-| `/send-email` | Send email from an AgentMail inbox (`your-agent@agentmail.to`, `your-inbox@agentmail.to`) | Implemented |
-| `/privacy-audit` | Scan skill files for PII, API keys, and child-identifiable data before submitting a PR | Placeholder |
+That's it. Skills are live immediately — no restart needed.
 
 ---
 
-## Agents
+## Learn more
 
-Agents live in `agents/` and are invoked by skills or directly via Claude Code's agent system.
-
-| Agent | Description |
-|-------|-------------|
-| `kids-events-finder` | Searches for local kids events given city, age range, and time window |
-| `summer-camp-planner` | Researches, filters, and schedules summer camps for a given city and child profile |
-| `factuality-checker` | Verifies parenting information at L1–L5 factuality levels (L1 = web search, L5 = primary source) |
-
----
-
-## Community data
-
-Curated source configs and school portal configs. No code — data only.
-
-```
-community/
-├── regions/
-│   └── bay-area/
-│       ├── sources.yaml                  # Bay Area-wide event and activity sources
-│       └── san-carlos/
-│           ├── README.md                 # Quick reference: key URLs, storytime schedule
-│           └── sources.yaml             # 25+ San Carlos sources with topic presets
-└── schools/
-    ├── scsd/                             # San Carlos School District (TK–8)
-    │   ├── README.md
-    │   └── portals.yaml                  # PowerSchool + Google Classroom config
-    └── suhsd-carlmont/                   # Carlmont High School (9–12)
-        ├── README.md
-        └── portals.yaml                  # Infinite Campus + Canvas Observer config
-```
-
-### Topic presets (`/info-gather [preset]`)
-
-Defined in each `sources.yaml`. San Carlos presets:
-
-| Preset | What it pulls |
-|--------|--------------|
-| `events_this_weekend` | Library, San Carlos Life, ChatterBlock, Eventbrite, Parks & Rec, SCCT |
-| `summer_camps` | KidsOutAndAbout, CampPage, ChatterBlock, ActiveNet, SCCT, King's Swim |
-| `school_news` | SCSD RSS + individual school feeds |
-| `sports_registration` | AYSO, Little League, ActiveNet, Youth Sports, San Carlos United |
-| `enrichment_classes` | ChatterBlock, SCCT, King's Swim, ActiveNet |
-| `community_news` | San Carlos Life, Patch, Reddit r/SanCarlos, SM Daily Journal |
-
----
-
-## Project structure
-
-```
-parenting/
-├── README.md
-├── design_doc.md
-├── agents/
-│   ├── factuality-checker-agent.md
-│   ├── kids-events-finder.md
-│   └── summer-camp-planner.md
-├── skills/
-│   ├── academics/
-│   │   ├── analyze-report-card/SKILL.md
-│   │   ├── check-grades/SKILL.md
-│   │   └── weekly-digest/SKILL.md
-│   ├── afterschools/
-│   │   ├── find-events/SKILL.md
-│   │   └── monitor-registration/SKILL.md
-│   ├── email/
-│   │   └── agentmail-skill/
-│   │       ├── SKILL.md
-│   │       ├── email_safety_guidelines.md
-│   │       ├── monitor-human-reply/SKILL.md
-│   │       └── scan-emails/SKILL.md
-│   ├── media/
-│   │   └── youtube-kids-audit/SKILL.md
-│   ├── shopping/
-│   │   ├── order-food/SKILL.md
-│   │   └── top-up-lunch/SKILL.md
-│   └── util/
-│       ├── browser-automate/SKILL.md
-│       ├── info-gather/SKILL.md
-│       ├── mac-cron-job/SKILL.md
-│       ├── privacy-audit/SKILL.md
-│       └── send-email/SKILL.md
-├── user_docs/                       ← per-user config and state (not committed)
-│   └── agentmail_config.md          ← human owner allowlist + inbox settings
-├── .env_template                    ← copy to .env, add API keys
-└── community/
-    ├── regions/
-    │   └── bay-area/
-    │       ├── sources.yaml
-    │       └── san-carlos/
-    │           ├── README.md
-    │           └── sources.yaml
-    └── schools/
-        ├── scsd/
-        │   ├── README.md
-        │   └── portals.yaml
-        └── suhsd-carlmont/
-            ├── README.md
-            └── portals.yaml
-```
-
----
-
-## Contributing
-
-1. Create your skill under `skills/<category>/<name>/SKILL.md`
-2. Run `/privacy-audit --path skills/<category>/<name>/ --mode report` before submitting
-3. All Tier 1 issues (API keys, tokens, passwords) must be resolved
-4. Replace any personal data (child names, real addresses, school portal IDs) with placeholders
-5. Open a PR — the description should note any Tier 2 items left intentionally
-
-### Adding a new city
-
-1. Copy `community/regions/bay-area/san-carlos/` as a template
-2. Update `sources.yaml` with local sources and presets
-3. Add school districts under `community/schools/<district>/`
-
----
-
-## Related
-
-- [`design_doc.md`](design_doc.md) — Full architecture, Chrome automation guide, safety model, roadmap
+- [`playbook.md`](playbook.md) — Full skill reference, scheduling with launchd, contributing guide, community data, project structure
+- [`design_doc.md`](design_doc.md) — Architecture, Chrome automation guide, safety model, roadmap

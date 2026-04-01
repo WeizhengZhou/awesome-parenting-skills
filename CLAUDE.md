@@ -64,10 +64,28 @@ This is a public repo of reusable Claude Code skills, agents, and community data
 ```
 skills/<category>/<name>/SKILL.md   ← skill source (symlinked to ~/.claude/skills/)
 agents/<name>.md                    ← agent definitions
-community/                          ← curated URL/portal configs (no personal data)
-user_docs/                          ← personal config (partially gitignored)
+community/                          ← curated data safe for public (no personal data)
+scripts/                            ← shared Python utilities (agentmail.py, etc.)
+user_docs_template/                 ← committed templates — copy to user_docs/ on setup
+user_docs/                          ← your personal config (gitignored — never committed)
 .env_template                       ← copy to .env (gitignored) for API keys
 ```
+
+## First-time setup
+
+```bash
+# 1. Copy personal config templates
+cp -r user_docs_template/ user_docs/
+
+# 2. Fill in your details
+#    - user_docs/agentmail_config.md  → your email + AgentMail inbox
+#    - user_docs/kid_profile/         → copy _template.md for each child
+
+# 3. Copy env template and add API keys
+cp .env_template .env
+```
+
+`user_docs/` is gitignored. Your personal data (email, child names, school info) never leaves your machine.
 
 ## Skills are symlinked, not copied
 
@@ -89,6 +107,27 @@ Copy `.env_template` to `.env` and fill in your API keys. `.env` is gitignored a
 cp .env_template .env
 # Edit .env with your AGENTMAIL_API_KEY, NTFY_TOPIC, etc.
 ```
+
+## When the user says "remember" something
+
+When the user says "remember X" or "remember that X":
+
+1. **Save to memory** — write a memory file under `~/.claude/projects/.../memory/` and update `MEMORY.md` index (type: `user`, `project`, `feedback`, or `reference` as appropriate).
+
+2. **Update `user_docs/`** — find the most relevant existing file and update it. Mapping:
+
+   | What was remembered | Where to update in user_docs/ |
+   |---------------------|-------------------------------|
+   | Child info (school, grade, age, interests) | `user_docs/kid_profile/<child>_profile.md` — update frontmatter and/or profile body |
+   | School info (name, location, email, portal) | `user_docs/kid_profile/<child>_profile.md` frontmatter + create/update `user_docs/school/` config if relevant |
+   | Email / contact config | `user_docs/agentmail_config.md` |
+   | Any other personal config | Create or update the appropriate file under `user_docs/` |
+
+3. **Confirm both** — tell the user what was saved to memory and which `user_docs/` file was updated.
+
+If no `user_docs/` file clearly applies, save to memory only and note that no file update was needed.
+
+---
 
 ## Contributing a new skill
 
