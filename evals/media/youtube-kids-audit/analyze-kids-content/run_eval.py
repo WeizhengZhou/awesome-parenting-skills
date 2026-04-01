@@ -604,16 +604,24 @@ def check_specificity(output: str) -> tuple[bool, str]:
 
 
 # ---------------------------------------------------------------------------
-# LLM judge scoring
+# LLM judge scoring — single batched call per TC
 # ---------------------------------------------------------------------------
 
-def build_judge_prompt(
+def build_batch_judge_prompt(
     tc: TestCase,
     profile_text: str,
     history_summary: str,
     skill_output: str,
-    rubric_dim: RubricDim,
+    dims: list[RubricDim],
 ) -> str:
+    dims_block = "\n\n".join(
+        f"### {d.id} — {d.name} (weight {d.weight})\n"
+        f"Description: {d.description}\n"
+        f"PASS if: {d.pass_criteria}\n"
+        f"FAIL if: {d.fail_criteria}"
+        for d in dims
+    )
+    ids = [d.id for d in dims]
     return f"""You are evaluating the output of an AI skill called "analyze-kids-content".
 The skill analyzes a child's YouTube watch history and produces a personalized educational report.
 
@@ -628,59 +636,64 @@ The skill analyzes a child's YouTube watch history and produces a personalized e
 ## Skill Output
 {skill_output[:6000]}
 
-## Rubric Dimension to Score: {rubric_dim.id} — {rubric_dim.name}
+## Rubric Dimensions to Score
 
-**Description:** {rubric_dim.description}
+Score EACH of the following dimensions PASS or FAIL based on the skill output above.
 
-**PASS criteria:**
-{rubric_dim.pass_criteria}
+{dims_block}
 
-**FAIL criteria:**
-{rubric_dim.fail_criteria}
+## Response Format
 
-## Your Task
+Return a JSON object — nothing else, no markdown fences. Example:
+{{"R1": {{"verdict": "PASS", "reason": "one sentence"}}, "R2": {{"verdict": "FAIL", "reason": "one sentence"}}}}
 
-Score this output PASS or FAIL on the rubric dimension above.
-
-Respond in this exact format (nothing else):
-VERDICT: PASS
-REASON: <one sentence explaining why>
-
-OR:
-
-VERDICT: FAIL
-REASON: <one sentence explaining what specifically failed>
+Score all {len(ids)} dimensions: {', '.join(ids)}
 """
 
 
-def parse_judge_response(response: str) -> tuple[Optional[bool], str]:
-    """Parse VERDICT: PASS/FAIL from judge response."""
-    m = re.search(r'VERDICT:\s*(PASS|FAIL)', response, re.IGNORECASE)
-    if not m:
-        return None, f"Could not parse verdict from: {response[:200]}"
-    verdict = m.group(1).upper() == "PASS"
-
-    reason_m = re.search(r'REASON:\s*(.+)', response, re.IGNORECASE | re.DOTALL)
-    reason = reason_m.group(1).strip()[:200] if reason_m else "(no reason given)"
-    return verdict, reason
-
-
-def score_with_llm_judge(
+def score_all_llm_dims(
     tc: TestCase,
     profile_text: str,
     videos: list[dict],
     skill_output: str,
-    rubric_dim: RubricDim,
+    dims: list[RubricDim],
     verbose: bool = False,
-) -> tuple[Optional[bool], str]:
+) -> dict[str, tuple[Optional[bool], str]]:
+    """Single claude call scoring all LLM-judge dimensions. Returns {rid: (verdict, reason)}."""
+    if not dims:
+        return {}
     history_summary = format_history_table(videos[:20])
-    judge_prompt = build_judge_prompt(tc, profile_text, history_summary, skill_output, rubric_dim)
+    prompt = build_batch_judge_prompt(tc, profile_text, history_summary, skill_output, dims)
     if verbose:
-        print(f"    [judge] Calling claude for {rubric_dim.id}...")
-    response, ok = run_claude(judge_prompt, timeout=120)
+        print(f"    [judge] Scoring {[d.id for d in dims]} in one call...")
+    response, ok = run_claude(prompt, timeout=180)
     if not ok:
-        return None, response
-    return parse_judge_response(response)
+        return {d.id: (None, f"Judge call failed: {response[:100]}") for d in dims}
+
+    # Strip markdown fences if present
+    cleaned = re.sub(r'^```(?:json)?\s*|\s*```$', '', response.strip(), flags=re.MULTILINE)
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError:
+        # Fallback: try to extract individual verdicts
+        results = {}
+        for d in dims:
+            m = re.search(rf'"{d.id}".*?"verdict":\s*"(PASS|FAIL)".*?"reason":\s*"([^"]+)"',
+                          response, re.IGNORECASE | re.DOTALL)
+            if m:
+                results[d.id] = (m.group(1).upper() == "PASS", m.group(2)[:200])
+            else:
+                results[d.id] = (None, f"Parse error in batch response: {response[:100]}")
+        return results
+
+    results = {}
+    for d in dims:
+        entry = data.get(d.id, {})
+        verdict_str = entry.get("verdict", "").upper()
+        reason = entry.get("reason", "(no reason)")[:200]
+        verdict = True if verdict_str == "PASS" else (False if verdict_str == "FAIL" else None)
+        results[d.id] = (verdict, reason)
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -937,11 +950,13 @@ def run_single_tc(
             continue
 
         elif rd.scoring_method == "llm_judge":
-            verdict, reason = score_with_llm_judge(
-                tc, profile_text, videos, skill_output, rd, verbose=verbose
-            )
-            # Rate limit courtesy pause between judge calls
-            time.sleep(1)
+            # Resolved below via batch call — placeholder until then
+            dim_results.append(DimResult(
+                rubric_id=rid, name=rd.name, weight=rd.weight,
+                verdict=None, points_earned=0, points_possible=rd.weight,
+                reason="Pending batch judge",
+            ))
+            continue
 
         else:
             verdict, reason = None, f"Unknown scoring method: {rd.scoring_method}"
@@ -956,6 +971,26 @@ def run_single_tc(
             points_possible=rd.weight,
             reason=reason,
         ))
+
+    # --- Single batched LLM judge call for all llm_judge dims ---
+    if not dry_run:
+        llm_dims = [RUBRIC_BY_ID[rid] for rid in tc.applicable_rubrics
+                    if RUBRIC_BY_ID[rid].scoring_method == "llm_judge"]
+        if llm_dims:
+            if verbose:
+                print(f"  [judge] Batch scoring {[d.id for d in llm_dims]}...")
+            batch_results = score_all_llm_dims(
+                tc, profile_text, videos, skill_output, llm_dims, verbose=verbose
+            )
+            for i, dim in enumerate(dim_results):
+                if dim.reason == "Pending batch judge" and dim.rubric_id in batch_results:
+                    verdict, reason = batch_results[dim.rubric_id]
+                    points = RUBRIC_BY_ID[dim.rubric_id].weight if verdict is True else 0
+                    dim_results[i] = DimResult(
+                        rubric_id=dim.rubric_id, name=dim.name, weight=dim.weight,
+                        verdict=verdict, points_earned=points,
+                        points_possible=dim.weight, reason=reason,
+                    )
 
     return TCResult(
         tc_id=tc.id,
@@ -998,6 +1033,79 @@ def apply_cross_tc_scoring(results: list[TCResult]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Markdown report writer
+# ---------------------------------------------------------------------------
+
+def write_markdown_report(results: list[TCResult], report_path: Path) -> None:
+    import datetime
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    lines = [
+        f"# Eval Report — analyze-kids-content",
+        f"",
+        f"**Run date:** {now}  ",
+        f"**Test cases:** {len(results)}  ",
+        f"**Rubric:** `rubric.md`",
+        f"",
+        f"---",
+        f"",
+        f"## Summary",
+        f"",
+        f"| Test Case | Score | Pass Rate | Status |",
+        f"|-----------|-------|-----------|--------|",
+    ]
+    grand_total = grand_max = 0
+    for r in results:
+        t, m = r.total_points(), r.max_points()
+        grand_total += t
+        grand_max += m
+        pct = f"{t/m*100:.0f}%" if m else "N/A"
+        status = "✅ PASS" if r.overall_pass() else "❌ FAIL"
+        lines.append(f"| **{r.tc_id}**: {r.tc_label} | {t}/{m} | {pct} | {status} |")
+
+    overall_pct = grand_total / grand_max * 100 if grand_max else 0
+    overall_status = (
+        "✅ PRODUCTION READY" if overall_pct >= 85
+        else "⚠️ NEEDS IMPROVEMENT" if overall_pct >= 70
+        else "❌ FAILING"
+    )
+    lines += [
+        f"",
+        f"**Overall: {grand_total}/{grand_max} ({overall_pct:.0f}%) — {overall_status}**",
+        f"",
+        f"---",
+        f"",
+    ]
+
+    for r in results:
+        lines += [
+            f"## {r.tc_id.upper()}: {r.tc_label}",
+            f"",
+            f"**Score: {r.total_points()}/{r.max_points()} ({r.pass_rate()*100:.0f}%)**",
+            f"",
+            f"| Rubric | Dimension | Weight | Verdict | Reason |",
+            f"|--------|-----------|--------|---------|--------|",
+        ]
+        for d in r.dim_results:
+            if d.verdict is None:
+                badge = "⏭ N/A"
+            elif d.verdict:
+                badge = "✅ PASS"
+            else:
+                badge = "❌ FAIL"
+            reason = d.reason.replace("|", "\\|").replace("\n", " ")[:120]
+            lines.append(f"| {d.rubric_id} | {d.name} | {d.weight} | {badge} | {reason} |")
+
+        lines += ["", "### Skill Output (excerpt)", "", "```"]
+        lines += r.skill_output[:3000].splitlines()
+        if len(r.skill_output) > 3000:
+            lines.append("... [truncated — full output in JSON results file]")
+        lines += ["```", "", "---", ""]
+
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Markdown report saved → {report_path}")
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -1018,7 +1126,7 @@ def main() -> None:
     parser.add_argument(
         "--output",
         metavar="FILE",
-        help="Save full results to JSON file",
+        help="Save full results to JSON file (also auto-generates a .md report alongside it)",
     )
     parser.add_argument(
         "--verbose",
@@ -1082,6 +1190,9 @@ def main() -> None:
         output_path = Path(args.output)
         output_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
         print(f"Results saved to {output_path}")
+        # Auto-generate markdown report alongside the JSON
+        md_path = output_path.with_suffix(".md")
+        write_markdown_report(results, md_path)
 
 
 if __name__ == "__main__":
