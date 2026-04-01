@@ -247,12 +247,15 @@ def load_history(tc: TestCase) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def format_history_table(videos: list[dict]) -> str:
+def format_history_table(videos: list[dict], limit: int = 15) -> str:
+    sample = videos[:limit]
     lines = [
+        f"_(showing {len(sample)} of {len(videos)} videos)_",
+        "",
         "| # | Title | Channel | Duration |",
         "|---|-------|---------|----------|",
     ]
-    for i, v in enumerate(videos, 1):
+    for i, v in enumerate(sample, 1):
         title = v.get("title", "")[:70]
         channel = v.get("channel", "")[:40]
         duration = v.get("durationRaw", "")
@@ -409,11 +412,10 @@ Identify the dominant themes and "systems" {name} is consuming.
 For each theme, list 2-3 example titles and rate engagement (High/Medium/Low based on
 frequency, repeat views, or channel volume).
 
-**Level check:** Flag any content that appears to be *below* {name}'s level — content
-they have likely "graduated from" even though it may still appear in history. Examples:
-basic phonics channels for a fluent reader, simple counting for an advanced math learner.
-Label these **"Educational Junk Food"** — they feel productive but provide no new
-challenge.
+**Level check:** Flag content *below {name}'s actual academic level* as **"Educational Junk Food"**.
+Only flag it if it is clearly beneath their stated math/reading level — NOT just because
+it seems simple in isolation. A 5-year-old watching Cocomelon is age-appropriate; a
+Beast-Academy-level child watching Cocomelon is junk food. Calibrate to THIS child's profile.
 
 ---
 
@@ -431,18 +433,12 @@ Content to deprecate. Two types:
 - *Misaligned*: passive entertainment with low vocabulary/complexity for their level
 
 **ADD — The Growth Areas (gaps to fill)**
-This is the most important section. Recommend specific named YouTube channels or
-content types to fill gaps identified in the audit. Use these strategies:
-
-- **Elevate Math**: Logic puzzles, proof-based thinking, conceptual geometry —
-  no drills. Must match their actual level.
-- **The "Trojan Horse"**: History / biography content framed as engineering,
-  science, or systems — bypasses any dislike of "dates and names" history.
-- **Deepen English**: Fiction featuring competence, survival, and logic.
-  Audiobooks at native speed beat ESL-simplified videos for vocabulary growth.
-- **Science Breadth**: Inquiry-first channels (How? Why? What if?) over
-  fact-listing channels.
-- **SEL for Learners**: Growth mindset content.
+Recommend specific named channels. Be concise — one line per channel. Cover ALL five:
+- **Math**: logic/puzzles at {name}'s level — no drills, no basic counting for advanced learners
+- **English**: audiobooks or writing structure — native-speed content beats simplified ESL
+- **Science**: inquiry-first ("How? Why?") — not just animal facts
+- **Knowledge**: "Trojan Horse" history via engineering, invention, or biography
+- **SEL (required)**: name one specific growth mindset or emotional-resilience channel
 
 ---
 
@@ -662,7 +658,7 @@ def score_all_llm_dims(
     """Single claude call scoring all LLM-judge dimensions. Returns {rid: (verdict, reason)}."""
     if not dims:
         return {}
-    history_summary = format_history_table(videos[:20])
+    history_summary = format_history_table(videos)
     prompt = build_batch_judge_prompt(tc, profile_text, history_summary, skill_output, dims)
     if verbose:
         print(f"    [judge] Scoring {[d.id for d in dims]} in one call...")

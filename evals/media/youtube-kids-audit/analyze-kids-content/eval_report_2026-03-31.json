@@ -14,7 +14,7 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "No finance, tech news, adult drama, crypto, sports, or news channels appear in KEEP or ADD recommendations."
+        "reason": "No finance, crypto, tech news, or adult drama channels appear in KEEP or ADD sections; all adult content from the watch history was correctly excluded from child recommendations."
       },
       {
         "rubric_id": "R2",
@@ -23,7 +23,7 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "CoComelon, Numberblocks, and Blippi are all flagged as Educational Junk Food in REMOVE with explicit level-mismatch explanations citing specific grade-level gaps."
+        "reason": "Cocomelon, Blippi, and below-level Numberblocks are all placed in REMOVE labeled as 'Educational Junk Food' with specific level-mismatch explanations citing Alex's Beast Academy 3B math and Grade 5 re"
       },
       {
         "rubric_id": "R3",
@@ -32,7 +32,7 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "ADD section recommends AoPS YouTube, Mathologer, and Numberphile \u2014 all at or above Beast Academy 3B level, with puzzle/proof framing matching Alex's logic-systems learning style."
+        "reason": "ADD section names AoPS, Numberphile, and Mind Your Decisions \u2014 all competition/puzzle-level math matching Beast Academy philosophy \u2014 with no basic counting content recommended."
       },
       {
         "rubric_id": "R4",
@@ -41,7 +41,7 @@
         "verdict": false,
         "points_earned": 0,
         "points_possible": 2,
-        "reason": "ADD section addresses Math, Science, and History/Knowledge but lacks explicit English Skills or SEL recommendations, and the output is truncated before completing the Science upgrade section \u2014 fewer t"
+        "reason": "ADD section covers Math, English, Science, and Knowledge but has no SEL or growth mindset recommendation, and goal labels in the curriculum table are incomplete (Knowledge Breadth/English Skills only,"
       },
       {
         "rubric_id": "R5",
@@ -59,7 +59,7 @@
         "verdict": true,
         "points_earned": 2,
         "points_possible": 2,
-        "reason": "16 named channels found: Kurzgesagt, Mathologer, Numberphile, SciShow Kids, SciShow, Crash Course, Homeschool Pop, MinuteEarth"
+        "reason": "17 named channels found: TED-Ed, Kurzgesagt, Numberphile, SciShow Kids, SciShow, Crash Course, Homeschool Pop, It's Okay to Be Smart"
       },
       {
         "rubric_id": "R7",
@@ -77,17 +77,17 @@
         "verdict": true,
         "points_earned": 1,
         "points_possible": 1,
-        "reason": "The Trojan Horse section explicitly connects Alex's interest in how-things-work/rule-systems to history via engineering (Practical Engineering, Shadiversity) and mythology (Overly Sarcastic Production"
+        "reason": "The report explicitly bridges Harry Potter (Alex's stated interest) to TED-Ed History and TED-Ed writing structure, and Kurzgesagt biology episodes are connected to Alex's known interest in animal sys"
       }
     ]
   },
   {
     "tc_id": "tc002",
     "tc_label": "Average 5yo, dedicated account",
-    "total_points": 9,
+    "total_points": 15,
     "max_points": 15,
-    "pass_rate": 0.6,
-    "overall_pass": false,
+    "pass_rate": 1.0,
+    "overall_pass": true,
     "dimensions": [
       {
         "rubric_id": "R2",
@@ -96,25 +96,25 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "The skill correctly labels two Sesame Street clips as Educational Junk Food with specific level-mismatch reasoning: Sam's profile shows counting to 20 and CVC/sight-word reading, so counting-to-10 and"
+        "reason": "Age-appropriate content is correctly NOT flagged as junk food for this typical 5yo; unboxing/gaming reaction content is flagged in REMOVE with clear rationale (passive consumption, zero narrative arc,"
       },
       {
         "rubric_id": "R3",
         "name": "Math Level Calibration",
         "weight": 3,
-        "verdict": false,
-        "points_earned": 0,
+        "verdict": true,
+        "points_earned": 3,
         "points_possible": 3,
-        "reason": "The ADD section is truncated mid-heading ('REMOVE / GRADUAT') and never appears in the output, so no math channel is named at any level."
+        "reason": "Numberblocks is recommended for a Kindergartener learning to count to 20, which matches the child's level; Odd Squad adds story-based math reasoning aligned with Sam's story-driven learning style."
       },
       {
         "rubric_id": "R4",
         "name": "Five-Goal Coverage",
         "weight": 2,
-        "verdict": false,
-        "points_earned": 0,
+        "verdict": true,
+        "points_earned": 2,
         "points_possible": 2,
-        "reason": "The ADD section is absent from the output due to truncation, so goal coverage and goal labels in the curriculum table cannot be verified."
+        "reason": "ADD section covers all 5 goals: Math (Numberblocks, Odd Squad), English (Storyline Online), Science (SciShow Kids, Ask the StorybotS), Knowledge Breadth (Puffin Rock, Dinosaur Train), SEL (Alma's Way)"
       },
       {
         "rubric_id": "R5",
@@ -132,7 +132,7 @@
         "verdict": true,
         "points_earned": 2,
         "points_possible": 2,
-        "reason": "24 named channels found: SciShow Kids, SciShow, Wild Kratts, PBS Kids, Dino Dana, Bluey, Daniel Tiger, Numberblocks"
+        "reason": "22 named channels found: SciShow Kids, SciShow, Odd Squad, PBS Kids, Dino Dana, Alma's Way, Bluey, Daniel Tiger"
       },
       {
         "rubric_id": "R7",
@@ -147,20 +147,20 @@
         "rubric_id": "R8",
         "name": "Trojan Horse Recommendation",
         "weight": 1,
-        "verdict": false,
-        "points_earned": 0,
+        "verdict": true,
+        "points_earned": 1,
         "points_possible": 1,
-        "reason": "The ADD section is missing from the output entirely, so no cross-domain Trojan Horse recommendation connecting Sam's dinosaur or vehicle interests to a gap subject is present."
+        "reason": "Dinosaur Train explicitly bridges Sam's stated dinosaur interest to geological time, ecosystems, and classification \u2014 directly connecting the passion domain to knowledge breadth and natural history ga"
       }
     ]
   },
   {
     "tc_id": "tc003",
     "tc_label": "Struggling 9yo, mixed account",
-    "total_points": 10,
+    "total_points": 14,
     "max_points": 16,
-    "pass_rate": 0.625,
-    "overall_pass": false,
+    "pass_rate": 0.875,
+    "overall_pass": true,
     "dimensions": [
       {
         "rubric_id": "R1",
@@ -169,7 +169,7 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "No channels matching ignore_patterns (sports analysis, adult tech reviews, political news, gaming hardware) appear in KEEP or ADD recommendations; all KEEP entries are child-appropriate LEGO, Minecraf"
+        "reason": "No adult content matching ignore_patterns (sports analysis, tech reviews, political news, gaming hardware) appears in KEEP or ADD recommendations."
       },
       {
         "rubric_id": "R2",
@@ -178,16 +178,16 @@
         "verdict": true,
         "points_earned": 3,
         "points_possible": 3,
-        "reason": "Numberblocks is correctly kept in KEEP (appropriate for Jordan's Grade 2 math baseline, not flagged as junk food), while Rock 'N Learn phonics drills are correctly flagged as Educational Junk Food due"
+        "reason": "Jordan is a below-level learner (Grade 2 math/reading at age 9), so Numberblocks is correctly recommended rather than flagged \u2014 age-appropriate content for this child's actual level is not incorrectly"
       },
       {
         "rubric_id": "R3",
         "name": "Math Level Calibration",
         "weight": 3,
-        "verdict": false,
-        "points_earned": 0,
+        "verdict": true,
+        "points_earned": 3,
         "points_possible": 3,
-        "reason": "The output is truncated mid-sentence and the ADD section is entirely absent, making it impossible to verify that at least one math channel at or above Jordan's Grade 2 level was recommended with visua"
+        "reason": "Math recommendations (Numberblocks, Math Antics, Polypad) target Grade 2\u20133 level matching Jordan's stated Grade 2 math level, and are visual/spatial in style matching Jordan's learning profile."
       },
       {
         "rubric_id": "R4",
@@ -196,7 +196,7 @@
         "verdict": false,
         "points_earned": 0,
         "points_possible": 2,
-        "reason": "The ADD section and curriculum table are missing from the truncated output, so English Skills, SEL, and goal-label coverage cannot be verified; fewer than 3 of the 5 required goal areas are surfaced i"
+        "reason": "No SEL recommendation appears in the ADD section, and the output is cut off before completion, meaning fewer than 4 goals may be addressed \u2014 SEL/growth mindset is absent from what is visible."
       },
       {
         "rubric_id": "R5",
@@ -214,16 +214,16 @@
         "verdict": true,
         "points_earned": 2,
         "points_possible": 2,
-        "reason": "14 named channels found: Kurzgesagt, SciShow Kids, SciShow, Crash Course, Numberblocks, Mark Rober, NASA, Math Antics"
+        "reason": "13 named channels found: TED-Ed, SciShow Kids, SciShow, Crash Course, Numberblocks, Mark Rober, NASA, Math Antics"
       },
       {
         "rubric_id": "R8",
         "name": "Trojan Horse Recommendation",
         "weight": 1,
-        "verdict": false,
-        "points_earned": 0,
+        "verdict": true,
+        "points_earned": 1,
         "points_possible": 1,
-        "reason": "Although the KEEP analysis explicitly references the 'Trojan Horse spatial math strategy' for Minecraft, the ADD section (where a cross-domain bridge recommendation must appear) is absent from the tru"
+        "reason": "The report explicitly recommends Minecraft Education to teach math geometry and coding, directly bridging Jordan's stated Minecraft/LEGO interest to math and science gap subjects with the cross-domain"
       }
     ]
   }
