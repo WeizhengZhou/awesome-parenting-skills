@@ -3,7 +3,11 @@ profile_type: kid
 name: "Jordan"
 age: 9
 last_updated: "2026-03-31"
+synthetic: true
 ---
+
+> **SYNTHETIC TEST FIXTURE — NOT REAL CHILD DATA**
+> This profile was created for evaluation purposes only. Any resemblance to real children is coincidental.
 
 # Kid Profile: Jordan
 

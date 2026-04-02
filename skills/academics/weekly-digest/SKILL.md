@@ -83,7 +83,7 @@ A message matches a newsletter source if ANY of the following are true:
 For forwarded messages, the original sender info is in the body header block:
 ```
 ---------- Forwarded message ---------
-From: Angela Fiorentinos <afiorentinos@shschools.org>
+From: [Teacher Name] <teacher@school.org>
 ```
 Use this to attribute the message to the correct `newsletter_sources` entry.
 
@@ -93,7 +93,7 @@ For each matched message, fetch full content:
 python3 scripts/email/agentmail.py read --inbox "$FROM_INBOX" --id "$MSG_ID"
 ```
 
-Label each message with its source name ("SHS School-wide" vs "1st Grade / Angela Fiorentinos")
+Label each message with its source name ("SHS School-wide" vs "1st Grade / [Teacher Name]")
 so the digest section is clearly attributed.
 
 **Note on PDF attachments:** If a teacher newsletter arrives as a PDF attachment,

@@ -10,8 +10,8 @@ district:
   grades: 9-12
   website: https://www.carlmonths.org/
   district_url: https://www.seq.org/
-  address: "1400 Alameda de las Pulgas, Belmont, CA 94002"
-  phone: "(650) 592-3550"
+  address: "[see carlmonths.org for address]"
+  phone: "[see carlmonths.org for phone]"
 
 # ─── Grade / Attendance Portal ───────────────────────────────────────────────
 grades_portal:

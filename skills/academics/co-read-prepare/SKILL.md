@@ -1,6 +1,6 @@
 ---
 name: co-read-prepare
-description: "Generate a parent briefing + 4-level discussion questions for any book or movie. Reads Lexi's profile and reading log to tailor output. Usage: /co-read-prepare [title] [--child Lexi] [--mode questions|summary|both]"
+description: "Generate a parent briefing + 4-level discussion questions for any book or movie. Reads child profile and reading log to tailor output. Usage: /co-read-prepare [title] [--child <name>] [--mode questions|summary|both]"
 tools: Read, Write, Glob
 model: sonnet
 metadata:
@@ -22,7 +22,7 @@ Read the following files:
 - `user_docs/kid_profile/lexi_profile.md` — age, grade, strengths, interests
 - `user_docs/kid_profile/lexi_reading_log.md` — taste profile: what she loves, drops, re-reads
 
-Use this to calibrate tone and difficulty. Default child is Lexi (age 7, Grade 1) unless `--child` specifies otherwise.
+Use this to calibrate tone and difficulty. The default child is whoever is configured in `user_docs/kid_profile/` unless `--child` specifies otherwise.
 
 ---
 
@@ -32,7 +32,7 @@ Use this to calibrate tone and difficulty. Default child is Lexi (age 7, Grade 1
 /co-read-prepare "The Wild Robot"
 /co-read-prepare "Matilda" --mode questions
 /co-read-prepare "Spiderwick Chronicles" --mode summary
-/co-read-prepare "Inside Out" --child Lexi --mode both
+/co-read-prepare "Inside Out" --child [child_name] --mode both
 ```
 
 - `--mode both` (default): generate summary + questions
@@ -73,7 +73,7 @@ For each key character:
 - Where characters end up
 
 #### Key Moments to Remember
-5–7 bullet points of the most important or emotionally significant scenes — the ones Lexi is most likely to bring up.
+5–7 bullet points of the most important or emotionally significant scenes — the ones the child is most likely to bring up.
 
 #### Core Themes & Ideas
 List main themes (friendship, courage, survival, belonging, etc.) with a 1–2 sentence plain-English explanation of why each matters for kids.
@@ -84,10 +84,9 @@ List main themes (friendship, courage, survival, belonging, etc.) with a 1–2 s
 
 Generate 4–6 questions per level. Output as a table.
 
-### Lexi's taste profile (apply to all levels)
-- She loves: external threats, crafting/survival mechanics, rule-based systems, fast pacing
-- She drops: slow/emotional stories without stakes
-- Use: concrete, action-oriented framing. "What does X do to survive?" beats "How does X feel about Y?"
+### Child's taste profile (apply to all levels)
+Load from `user_docs/kid_profile/` — the child's interests, dislikes, and reading style.
+Use the profile to frame questions in terms the child will engage with (e.g., action-oriented vs. emotional framing).
 
 ### Level 1 — Simple Understanding
 Purpose: Build confidence and check basic comprehension.
@@ -145,7 +144,7 @@ Front matter:
 ---
 date: YYYY-MM-DD
 title: [Book/Movie Title]
-child: Lexi
+child: [child_name]
 mode: both | summary | questions
 ---
 ```

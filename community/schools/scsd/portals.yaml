@@ -110,7 +110,7 @@ lunch:
   system: unknown                     # NOT confirmed as of 2026-03-31
   notes: >
     SCSD lunch payment system not confirmed via public website.
-    Contact Business Office to verify: Lisa Ceragioli, (650) 590-5927.
+    Contact Business Office to verify (see district website for current contact).
     Likely candidates: MySchoolBucks or district-managed system.
     Update this field once confirmed.
   district_lunch_page: https://www.scsdk8.org/apps/pages/School-Lunch-Program
@@ -147,7 +147,7 @@ after_school:
       url: https://docs.google.com/document/d/1u6x2UiqDx99-FT8QD0RcaC-614g-ZMAzOEsiAVC6cmI/
       needs_browser: true
       notes: Google Doc — list of vendor enrichment classes on SCSD campuses (STEAM, arts, sports)
-      contact: "Julia Mendelson, (650) 590-5966"
+      contact: "Enrichment Coordinator (see district website for current contact)"
 
 # ─── District News (RSS feeds — usable with /info-gather) ────────────────────
 news_feeds:

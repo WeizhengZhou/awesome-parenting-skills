@@ -1,7 +1,7 @@
 ---
 status: draft
 last_verified: 2026-04-01
-verified_by: weizheng
+verified_by: [your-username]
 eval_path:
 known_issues: []
 ---
@@ -15,9 +15,9 @@ Draft a polished, concise email to your child's teacher from a plain-English sit
 ## Usage
 
 ```
-/draft-teacher-email "Lexi has been struggling with reading comprehension lately — ask for tips we can practice at home"
-/draft-teacher-email "Emma is going to miss Friday for a doctor appointment — let the teacher know"
-/draft-teacher-email --child lexi --situation "Lexi mentioned she's been having trouble with a classmate at recess. We want to flag it without making a big deal." --tone sensitive
+/draft-teacher-email "[child_name] has been struggling with reading comprehension lately — ask for tips we can practice at home"
+/draft-teacher-email "[child_name] is going to miss Friday for a doctor appointment — let the teacher know"
+/draft-teacher-email --child [child_name] --situation "[child_name] mentioned she's been having trouble with a classmate at recess. We want to flag it without making a big deal." --tone sensitive
 /draft-teacher-email --send
 ```
 
@@ -90,13 +90,13 @@ Draft a polished, concise email to your child's teacher from a plain-English sit
 
 To: Ms. Rodriguez <mrodriguez@school.org>
 From: Your Name <yourname@agentmail.to>
-Subject: Lexi — homework support question
+Subject: [child_name] — homework support question
 
 ---
 
 Hi Ms. Rodriguez,
 
-I wanted to reach out about Lexi's reading comprehension. She's been finding the longer passages a bit overwhelming at home, and we'd love any tips you can share for how to practice this together. Happy to jump on a quick call if that's easier.
+I wanted to reach out about [child_name]'s reading comprehension. She's been finding the longer passages a bit overwhelming at home, and we'd love any tips you can share for how to practice this together. Happy to jump on a quick call if that's easier.
 
 Thank you,
 [Parent Name]
@@ -126,11 +126,11 @@ Send this email? (reply 'yes' to send, or paste edits to revise)
 ## Example runs
 
 ```
-/draft-teacher-email "Lexi is going to miss Thursday for a dentist appointment — please let us know if she'll miss anything important"
+/draft-teacher-email "[child_name] is going to miss Thursday for a dentist appointment — please let us know if she'll miss anything important"
 ```
 
 ```
-/draft-teacher-email --tone sensitive "Lexi mentioned that a classmate said something mean to her at lunch. We don't know the full story but wanted to give you a heads-up in case you noticed anything."
+/draft-teacher-email --tone sensitive "[child_name] mentioned that a classmate said something mean to her at lunch. We don't know the full story but wanted to give you a heads-up in case you noticed anything."
 ```
 
 ```
