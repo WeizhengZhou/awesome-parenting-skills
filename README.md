@@ -70,7 +70,7 @@ Agents handle multi-step tasks that go beyond a single skill.
 
 ```bash
 # 1. Clone
-git clone https://github.com/anthropics/awesome-parenting-skills
+git clone https://github.com/WeizhengZhou/awesome-parenting-skills
 cd awesome-parenting-skills
 
 # 2. Symlink skills into Claude Code
